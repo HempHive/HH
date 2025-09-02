@@ -540,17 +540,61 @@
     }
 
     function fetchStations() {
-      fetch('radio.txt').then(function(r){ return r.text(); }).then(function(text){
-        radioList = text.split(/\n+/).map(function(line){ return line.trim(); }).filter(function(l){ return l && !l.startsWith('#'); }).map(function(line){
-          var parts = line.split('|');
-          return { name: parts[0] || 'Station', url: parts[1] || parts[0] };
-        });
+      // Try absolute path first to avoid SPA fallbacks returning index.html
+      fetch('/radio.txt', { cache: 'no-cache' }).then(function(r){
+        if (!r.ok) throw new Error('not ok');
+        return r.text();
+      }).catch(function(){
+        return fetch('radio.txt', { cache: 'no-cache' }).then(function(r){ return r.text(); });
+      }).then(function(text){
+        // Guard: some servers return index.html when file missing
+        var header = text.slice(0, 32).toLowerCase();
+        if (header.includes('<!doctype') || header.includes('<html')) {
+          console.warn('radio.txt fetch returned HTML; check path.');
+          radioList = [];
+          renderStations();
+          return;
+        }
+        radioList = parseStations(text);
         if (currentIdx === -1 && radioList.length) currentIdx = 0;
         renderStations();
-      }).catch(function(){
+      }).catch(function(err){
+        console.error('Failed to load radio.txt', err);
         radioList = [];
         renderStations();
       });
+    }
+
+    function parseStations(text) {
+      var lines = text.replace(/\r/g,'').split('\n');
+      var entries = [];
+      // Collapse comments and blank lines
+      var tokens = [];
+      for (var i = 0; i < lines.length; i++) {
+        var ln = lines[i].trim();
+        if (!ln || ln.startsWith('#')) continue;
+        tokens.push(ln);
+      }
+      function isUrl(s){ return /:\/\//.test(s); }
+      function nameFromUrl(u){ try { var d = new URL(u).hostname.replace(/^www\./,''); return d; } catch(e){ return 'Station'; } }
+      for (var j = 0; j < tokens.length; j++) {
+        var t = tokens[j];
+        // Support Name|URL on one line
+        if (t.includes('|')) {
+          var parts = t.split('|');
+          var nm = (parts[0] || '').trim();
+          var url = (parts[1] || '').trim();
+          if (isUrl(url)) entries.push({ name: nm || nameFromUrl(url), url: url });
+          continue;
+        }
+        if (isUrl(t)) {
+          entries.push({ name: nameFromUrl(t), url: t });
+        } else if (j + 1 < tokens.length && isUrl(tokens[j+1])) {
+          entries.push({ name: t, url: tokens[j+1] });
+          j++; // consume url line
+        }
+      }
+      return entries;
     }
 
     function renderStations() {
