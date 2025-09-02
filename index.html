@@ -168,6 +168,20 @@
     .widebar .content { width: min(1200px, 92vw); text-align: center; letter-spacing: 0.5px; }
     @media (max-width: 768px) { .widebar { height: 56px; } }
 
+    /* Slide-in animation for bars after background fades */
+    .widebar { transform: translateY(-100%); opacity: 0; transition: transform 0.6s ease, opacity 0.6s ease; }
+    .widebar.bottom { transform: translateY(100%); }
+    body.show-bars .widebar.top { transform: translateY(0); opacity: 1; }
+    body.show-bars .widebar.bottom { transform: translateY(0); opacity: 1; }
+
+    /* Music cell playing state */
+    .hex-cell.music.playing polygon {
+      stroke: #fff176; /* neon honey */
+      stroke-width: 2;
+      fill: #ffec80;
+      filter: drop-shadow(0 0 10px rgba(255, 236, 128, 0.6)) drop-shadow(0 0 18px rgba(255, 214, 64, 0.35));
+    }
+
     .hex-button {
       position: absolute;
       width: 120px; /* will be overridden inline for perfect alignment */
@@ -268,7 +282,9 @@
     setTimeout(() => {
       var topHex = document.getElementById('hex');
       if (topHex) { topHex.classList.add('fade-out'); }
-    }, 6000);
+      // Show bars shortly after fade begins
+      document.body.classList.add('show-bars');
+    }, 1500);
 
     // Generate responsive honeycomb SVG with interactive cells
     function buildHoneycomb() {
@@ -419,14 +435,50 @@
             poly.setAttribute('stroke-width', '2');
           });
 
-          // Attach panel openers
-          var labels = ['Welcome','About','Shop','Projects','Future','Medical','Resources'];
-          var mapping = [center].concat(six.map(function(o){return o.g;}));
-          mapping.forEach(function(gr, i){
-            gr.addEventListener('click', function(){ openPanel(labels[i] || 'Info'); });
-            gr.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel(labels[i] || 'Info'); }});
-            var t = gr.querySelector('text'); if (t && labels[i]) { t.textContent = labels[i]; }
+          // Order neighbors by angle around the center (top first, clockwise)
+          var neighborOrdered = six.slice().sort(function(a,b){
+            function ang(o){ return Math.atan2(o.y - centerCent.y, o.x - centerCent.x); }
+            var A = ang(a), B = ang(b);
+            // rotate so that -90deg (top) is 0
+            var toStart = function(t){ var v = t + Math.PI/2; return v < -Math.PI ? v + 2*Math.PI : (v > Math.PI ? v - 2*Math.PI : v); };
+            A = toStart(A); B = toStart(B);
+            return A - B;
           });
+
+          // Preserve ring labels (clockwise from top); no Music in the ring
+          var ringLabels = window.__ringLabels || ['About','Shop','Projects','Future','Medical','Resources'];
+          window.__ringLabels = ringLabels.slice();
+
+          // Apply labels to the six neighbors
+          neighborOrdered.forEach(function(obj, idx){
+            var name = ringLabels[idx] || 'Info';
+            var gr = obj.g;
+            gr.addEventListener('click', function(){ openPanel(name); });
+            gr.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel(name); }});
+            var t = gr.querySelector('text'); if (t) { t.textContent = name; }
+          });
+
+          // Center mapping
+          center.addEventListener('click', function(){ openPanel('Welcome'); });
+          center.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel('Welcome'); }});
+          var ct = center.querySelector('text'); if (ct) { ct.textContent = 'Welcome'; }
+
+          // MUSIC: select the hex one row above the top neighbor (two steps above center)
+          var targetX = centerCent.x;
+          var targetY = centerCent.y - 2 * yStep;
+          var candidates = centroids.slice(6); // exclude the 6-ring cells we already used
+          var best = null; var bestD = Infinity;
+          candidates.forEach(function(o){
+            var dx = o.x - targetX; var dy = o.y - targetY; var d = dx*dx + dy*dy;
+            if (d < bestD) { bestD = d; best = o; }
+          });
+          if (best && best.g) {
+            var music = best.g; music.classList.add('music');
+            music.addEventListener('click', function(){ openMusicPanel(); });
+            music.addEventListener('contextmenu', function(e){ e.preventDefault(); toggleMusic(); });
+            music.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openMusicPanel(); }});
+            var mt = music.querySelector('text'); if (mt) { mt.textContent = 'Music'; }
+          }
         }
       }
     }
@@ -459,6 +511,95 @@
     document.getElementById('panelClose').addEventListener('click', closePanel);
     document.getElementById('panelBackdrop').addEventListener('click', function(e){ if (e.target.id === 'panelBackdrop') closePanel(); });
     window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePanel(); });
+
+    // Music panel & player
+    var radioList = [];
+    var currentIdx = -1;
+    var audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+
+    function openMusicPanel() {
+      var backdrop = document.getElementById('panelBackdrop');
+      var titleEl = document.getElementById('panelTitle');
+      var contentEl = document.getElementById('panelContent');
+      titleEl.textContent = 'Music';
+      contentEl.innerHTML = '<div id="nowPlaying" style="margin-bottom:10px;color:#ffda4d;">Not playing</div>'+
+        '<div id="stations" style="max-height:40vh;overflow:auto;margin-bottom:12px;"></div>'+
+        '<div style="display:flex;gap:10px;justify-content:center;">'+
+        '<button id="btnPrev" class="ui-btn">⏮ Prev</button>'+ 
+        '<button id="btnPlay" class="ui-btn">▶️ Play</button>'+ 
+        '<button id="btnNext" class="ui-btn">⏭ Next</button>'+ 
+        '</div>'+
+        '<style>.ui-btn{background:#151515;border:1px solid #ffcc33;color:#ffda4d;padding:8px 14px;border-radius:8px;cursor:pointer;transition:filter 0.2s ease;} .ui-btn:hover{filter:brightness(1.2);} .station{padding:8px;border:1px solid rgba(255,204,51,0.3);margin:6px 0;border-radius:8px;cursor:pointer;} .station.active{border-color:#ffcc33;background:rgba(255,204,51,0.08);}</style>';
+      backdrop.classList.add('show');
+      backdrop.setAttribute('aria-hidden','false');
+      if (!radioList.length) { fetchStations(); } else { renderStations(); }
+      document.getElementById('btnPrev').onclick = function(){ changeStation(-1); };
+      document.getElementById('btnPlay').onclick = function(){ toggleMusic(); };
+      document.getElementById('btnNext').onclick = function(){ changeStation(1); };
+    }
+
+    function fetchStations() {
+      fetch('radio.txt').then(function(r){ return r.text(); }).then(function(text){
+        radioList = text.split(/\n+/).map(function(line){ return line.trim(); }).filter(function(l){ return l && !l.startsWith('#'); }).map(function(line){
+          var parts = line.split('|');
+          return { name: parts[0] || 'Station', url: parts[1] || parts[0] };
+        });
+        if (currentIdx === -1 && radioList.length) currentIdx = 0;
+        renderStations();
+      }).catch(function(){
+        radioList = [];
+        renderStations();
+      });
+    }
+
+    function renderStations() {
+      var container = document.getElementById('stations');
+      if (!container) return;
+      container.innerHTML = '';
+      radioList.forEach(function(st, idx){
+        var div = document.createElement('div');
+        div.className = 'station'+(idx===currentIdx?' active':'');
+        div.textContent = st.name;
+        div.onclick = function(){ selectStation(idx, true); };
+        div.oncontextmenu = function(e){ e.preventDefault(); toggleMusic(); };
+        container.appendChild(div);
+      });
+      updateNowPlaying();
+    }
+
+    function selectStation(idx, autoplay) {
+      currentIdx = idx;
+      renderStations();
+      if (autoplay) { playCurrent(); }
+    }
+
+    function playCurrent() {
+      if (currentIdx < 0 || !radioList[currentIdx]) return;
+      audio.src = radioList[currentIdx].url;
+      audio.play().then(function(){ setMusicPlaying(true); }).catch(function(){});
+      updateNowPlaying();
+    }
+    function stopMusic() { audio.pause(); setMusicPlaying(false); }
+    function toggleMusic() { if (audio.paused) playCurrent(); else stopMusic(); }
+    function changeStation(dir) {
+      if (!radioList.length) return;
+      currentIdx = (currentIdx + dir + radioList.length) % radioList.length;
+      renderStations();
+      playCurrent();
+    }
+    function updateNowPlaying() {
+      var np = document.getElementById('nowPlaying');
+      if (!np) return;
+      if (currentIdx >= 0 && radioList[currentIdx]) { np.textContent = 'Playing: '+radioList[currentIdx].name; }
+      else { np.textContent = 'Not playing'; }
+    }
+
+    function setMusicPlaying(isPlaying) {
+      var cell = document.querySelector('.hex-cell.music');
+      if (!cell) return;
+      if (isPlaying) cell.classList.add('playing'); else cell.classList.remove('playing');
+    }
   </script>
 
 </body>
