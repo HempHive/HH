@@ -25,7 +25,7 @@
     body {
       background: #000; /* background handled by SVG honeycomb below */
 
-      opacity: 0.8;
+	opacity: 0.8;
     }
 
     /* Glow overlay – reduced intensity */
@@ -105,8 +105,9 @@
     .hex-cell:focus polygon,
     .hex-cell:hover polygon { stroke: #ffcc33; filter: drop-shadow(0 0 6px rgba(255,204,51,0.35)); }
     .cell-label { fill: #ffcc33; font-weight: 700; opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
-    .hex-cell:hover .cell-label,
-    .hex-cell:focus .cell-label { opacity: 1; }
+    .hex-cell:hover .cell-label { opacity: 1; }
+    .hex-cell.music.playing .cell-label { opacity: 0; }
+    .hex-cell.music.playing:hover .cell-label { opacity: 1; }
 
     /* Modal panel */
     .panel-backdrop {
@@ -178,8 +179,9 @@
     .hex-cell.music.playing polygon {
       stroke: #fff176; /* neon honey */
       stroke-width: 2;
-      fill: #ffec80;
-      filter: drop-shadow(0 0 10px rgba(255, 236, 128, 0.6)) drop-shadow(0 0 18px rgba(255, 214, 64, 0.35));
+      fill: #fff27a;
+      fill-opacity: 0.4; /* requested 0.4 opacity */
+      filter: drop-shadow(0 0 12px rgba(255, 246, 160, 0.75)) drop-shadow(0 0 22px rgba(255, 214, 64, 0.5));
     }
 
     .hex-button {
@@ -261,7 +263,7 @@
   <!-- Honeycomb grid (SVG background + buttons perfectly aligned) -->
   <div id="honeycomb" aria-label="HempHive navigation">
     <svg id="honeycombSvg" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-  </div>
+    </div>
 
   <!-- Widescreen bars -->
   <div class="widebar top"><div class="content"></div></div>
@@ -530,7 +532,7 @@
         '<button id="btnPlay" class="ui-btn">▶️ Play</button>'+ 
         '<button id="btnNext" class="ui-btn">⏭ Next</button>'+ 
         '</div>'+
-        '<style>.ui-btn{background:#151515;border:1px solid #ffcc33;color:#ffda4d;padding:8px 14px;border-radius:8px;cursor:pointer;transition:filter 0.2s ease;} .ui-btn:hover{filter:brightness(1.2);} .station{padding:8px;border:1px solid rgba(255,204,51,0.3);margin:6px 0;border-radius:8px;cursor:pointer;} .station.active{border-color:#ffcc33;background:rgba(255,204,51,0.08);}</style>';
+        '<style>.ui-btn{background:#151515;border:1px solid #ffcc33;color:#ffda4d;padding:8px 14px;border-radius:8px;cursor:pointer;transition:filter 0.2s ease;} .ui-btn:hover{filter:brightness(1.2);} .station{padding:8px;border:1px solid rgba(255,204,51,0.25);margin:6px 0;border-radius:8px;cursor:pointer;background:rgba(255,204,51,0.04);} .station:hover{background:rgba(255,204,51,0.08);} .station.active{border-color:#ffd24d;background:rgba(255,230,120,0.12);box-shadow:0 0 0 2px rgba(255,220,120,0.08) inset;}</style>';
       backdrop.classList.add('show');
       backdrop.setAttribute('aria-hidden','false');
       if (!radioList.length) { fetchStations(); } else { renderStations(); }
@@ -616,12 +618,22 @@
       currentIdx = idx;
       renderStations();
       if (autoplay) { playCurrent(); }
+      // Update selection visual immediately
+      var container = document.getElementById('stations');
+      if (container) {
+        Array.prototype.forEach.call(container.querySelectorAll('.station'), function(el, i){
+          if (i === currentIdx) el.classList.add('active'); else el.classList.remove('active');
+        });
+      }
     }
 
     function playCurrent() {
       if (currentIdx < 0 || !radioList[currentIdx]) return;
+      try { audio.pause(); } catch(e){}
+      audio.src = '';
+      audio.load();
       audio.src = radioList[currentIdx].url;
-      audio.play().then(function(){ setMusicPlaying(true); }).catch(function(){});
+      audio.play().then(function(){ setMusicPlaying(true); }).catch(function(err){ console.warn('Play failed', err); });
       updateNowPlaying();
     }
     function stopMusic() { audio.pause(); setMusicPlaying(false); }
@@ -642,7 +654,11 @@
     function setMusicPlaying(isPlaying) {
       var cell = document.querySelector('.hex-cell.music');
       if (!cell) return;
-      if (isPlaying) cell.classList.add('playing'); else cell.classList.remove('playing');
+      if (isPlaying) {
+        cell.classList.add('playing');
+      } else {
+        cell.classList.remove('playing');
+      }
     }
   </script>
 
