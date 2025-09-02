@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HempHive • Welcome</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: black;
+      animation: bgFade 3s ease-in-out forwards;
+    }
+
+    @keyframes bgFade {
+      from { opacity: 0.2; }
+      to { opacity: 1; }
+    }
+
+    body {
+      background: #000; /* background handled by SVG honeycomb below */
+
+      opacity: 0.8;
+    }
+
+    /* Glow overlay – reduced intensity */
+    .glow-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255, 204, 51, 0.04), rgba(0,0,0,0));
+      animation: subtleGlow 30s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 1;
+    }
+
+    @keyframes subtleGlow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.4; }
+    }
+
+    .center-container {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    .hex {
+      width: 12vw;
+      height: 12vw;
+      max-width: 120px;
+      max-height: 120px;
+      color: white;
+      font-size: 3rem;
+      text-align: center;
+      text-shadow: 0 0 10px #ffcc33, 0 0 20px #ff9900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+      clip-path: polygon(
+        25% 5%, 75% 5%, 
+        100% 50%, 75% 95%, 
+        25% 95%, 0% 50%
+      );
+      border: 2px solid #ffcc33;
+      border-radius: 12px;
+      transition: opacity 1s ease-out;
+    }
+
+    .hex.fade-out {
+      opacity: 0;
+    }
+
+    /* Honeycomb canvas (SVG background + interactive buttons overlay) */
+    #honeycomb {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
+    }
+    #honeycombSvg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #honeycombSvg { pointer-events: none; }
+
+    /* Interactive SVG cells */
+    .hex-cell { pointer-events: auto; cursor: pointer; }
+    .hex-cell polygon { transition: stroke 0.2s ease, fill 0.2s ease, filter 0.2s ease; }
+    .hex-cell:focus polygon,
+    .hex-cell:hover polygon { stroke: #ffcc33; filter: drop-shadow(0 0 6px rgba(255,204,51,0.35)); }
+    .cell-label { fill: #ffcc33; font-weight: 700; opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+    .hex-cell:hover .cell-label,
+    .hex-cell:focus .cell-label { opacity: 1; }
+
+    /* Modal panel */
+    .panel-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .panel {
+      width: min(640px, 90vw);
+      max-height: 80vh;
+      background: #0b0b0b;
+      border: 1px solid #ffcc33;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255, 204, 51, 0.25);
+      border-radius: 14px;
+      padding: 24px;
+      overflow: auto;
+      color: #eee;
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .panel h2 { margin: 0 0 10px 0; color: #ffda4d; }
+    .panel .close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: transparent;
+      border: 0;
+      color: #ffda4d;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .panel-backdrop.show { opacity: 1; pointer-events: auto; }
+    .panel-backdrop.show .panel { opacity: 0.6; transform: translateY(0) scale(1); }
+
+    /* Widescreen bars (top and bottom) */
+    .widebar {
+      position: fixed;
+      left: 0;
+      width: 100%;
+      height: 64px;
+      background: rgba(12,12,12,0.6);
+      color: #ffda4d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      backdrop-filter: blur(2px);
+    }
+    .widebar.top { top: 0; border-bottom: 1px solid rgba(255,204,51,0.8); }
+    .widebar.bottom { bottom: 0; border-top: 1px solid rgba(255,204,51,0.8); }
+    .widebar .content { width: min(1200px, 92vw); text-align: center; letter-spacing: 0.5px; }
+    @media (max-width: 768px) { .widebar { height: 56px; } }
+
+    .hex-button {
+      position: absolute;
+      width: 120px; /* will be overridden inline for perfect alignment */
+      height: 104px; /* w * 0.866 – set inline */
+      background: rgba(0, 0, 0, 0.25);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      clip-path: polygon(
+        25% 5%, 75% 5%, 
+        100% 50%, 75% 95%, 
+        25% 95%, 0% 50%
+      );
+      border: 2px solid rgba(255, 204, 51, 0.35);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+      transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+      cursor: pointer;
+      position: relative;
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .hex-button .label {
+      opacity: 0;
+      transform: translateY(6px);
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255, 204, 51, 0.35), 0 0 20px rgba(255, 153, 0, 0.25);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      padding: 0 6px;
+    }
+
+    .hex-button:hover,
+    .hex-button:focus-visible {
+      background: radial-gradient(circle at 50% 50%, rgba(255, 204, 51, 0.25), rgba(0,0,0,0.15));
+      border-color: #ffcc33;
+      box-shadow: 0 0 14px rgba(255, 204, 51, 0.45), 0 0 34px rgba(255, 153, 0, 0.25);
+      outline: none;
+      opacity: 1;
+      z-index: 4;
+    }
+
+    .hex-button:hover .label,
+    .hex-button:focus-visible .label {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Staggered reveal when page loads */
+    .hex-button.reveal { opacity: 1; }
+
+    @media (max-width: 768px) {
+      .hex,
+      .hex-button {
+        width: 16vw;
+        height: 16vw;
+      }
+
+      .hex-button {
+        height: 13.8vw;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Glow effect -->
+  <div class="glow-overlay"></div>
+
+  <!-- Top emoji -->
+  <div class="center-container">
+    <div class="hex" id="hex">🌿🐝</div>
+  </div>
+
+  <!-- Honeycomb grid (SVG background + buttons perfectly aligned) -->
+  <div id="honeycomb" aria-label="HempHive navigation">
+    <svg id="honeycombSvg" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+  </div>
+
+  <!-- Widescreen bars -->
+  <div class="widebar top"><div class="content">Top bar — content coming soon</div></div>
+  <div class="widebar bottom"><div class="content">Bottom bar — content coming soon</div></div>
+
+  <!-- Modal panel overlay -->
+  <div id="panelBackdrop" class="panel-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="panel">
+      <button class="close" aria-label="Close" id="panelClose">✕</button>
+      <h2 id="panelTitle"></h2>
+      <div id="panelContent"></div>
+    </div>
+  </div>
+
+  <!-- Interactions -->
+  <script>
+    // Fade out the hero emoji after a brief moment
+    setTimeout(() => {
+      var topHex = document.getElementById('hex');
+      if (topHex) { topHex.classList.add('fade-out'); }
+    }, 6000);
+
+    // Generate responsive honeycomb SVG with interactive cells
+    function buildHoneycomb() {
+      var svg = document.getElementById('honeycombSvg');
+      if (!svg) return;
+
+      var vw = window.innerWidth || document.documentElement.clientWidth;
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+
+      // Pointy-top orientation so points meet and rows fit in gaps
+      // Choose target columns across the screen
+      var targetCols = Math.max(7, Math.min(16, Math.round(vw / 130)));
+      // Derive hex dimensions from side length s
+      var w = vw / (targetCols + 0.5);        // width corner-to-corner
+      var s = w / Math.sqrt(3);               // side length (and radius)
+      var h = 2 * s;                          // height corner-to-corner
+      var xStep = w;                           // center spacing horizontally
+      var yStep = 1.5 * s;                     // center spacing vertically (3/4 of height)
+
+      // Compute grid extents with overflow coverage
+      var cols = Math.floor(vw / xStep) + 3;
+      var rows = Math.floor(vh / yStep) + 4;
+
+      // Prepare SVG
+      svg.setAttribute('viewBox', '0 0 ' + vw + ' ' + vh);
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+      // Gradients for honeycomb fill
+      var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      var grad1 = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+      grad1.setAttribute('id', 'cellGlow1');
+      grad1.setAttribute('cx', '50%');
+      grad1.setAttribute('cy', '50%');
+      grad1.setAttribute('r', '70%');
+      var s1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#1a1a1a');
+      var s2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#0a0a0a');
+      grad1.appendChild(s1); grad1.appendChild(s2);
+
+      var grad2 = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+      grad2.setAttribute('id', 'cellGlow2');
+      grad2.setAttribute('cx', '50%');
+      grad2.setAttribute('cy', '50%');
+      grad2.setAttribute('r', '70%');
+      var t1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop'); t1.setAttribute('offset','0%'); t1.setAttribute('stop-color','#141414');
+      var t2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop'); t2.setAttribute('offset','100%'); t2.setAttribute('stop-color','#050505');
+      grad2.appendChild(t1); grad2.appendChild(t2);
+
+      defs.appendChild(grad1); defs.appendChild(grad2);
+      svg.appendChild(defs);
+
+      function hexPoints(cx, cy) {
+        var p = [
+          [cx, cy - h/2],              // top point
+          [cx + w/2, cy - h/4],        // top-right
+          [cx + w/2, cy + h/4],        // bottom-right
+          [cx, cy + h/2],              // bottom point
+          [cx - w/2, cy + h/4],        // bottom-left
+          [cx - w/2, cy - h/4]         // top-left
+        ];
+        return p.map(function(pt){ return pt[0].toFixed(1)+','+pt[1].toFixed(1); }).join(' ');
+      }
+
+      var y = -h/2;
+      var centerQ = Math.round((vw / xStep) / 2);
+      var centerR = Math.round((vh / yStep) / 2);
+      var centerGroup = null;
+      var neighborGroups = [];
+      for (var r = 0; r < rows; r++) {
+        // For pointy-top, offset alternate rows by half width so points fit between gaps
+        var offsetX = (r % 2 === 0) ? 0 : w / 2;
+        var x = -w/2 + offsetX;
+        for (var c = 0; c < cols; c++) {
+          var cx = x + w/2;
+          var cy = y + h/2;
+          // interactive cell group
+          var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          g.setAttribute('class', 'hex-cell');
+          g.setAttribute('tabindex', '0');
+          g.setAttribute('role', 'button');
+          g.setAttribute('aria-label', 'Cell '+(r+1)+'-'+(c+1));
+
+          var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          poly.setAttribute('points', hexPoints(cx, cy));
+          poly.setAttribute('fill', (r + c) % 2 === 0 ? 'url(#cellGlow1)' : 'url(#cellGlow2)');
+          poly.setAttribute('stroke', 'rgba(255, 204, 51, 0.35)');
+          poly.setAttribute('stroke-width', '1');
+
+          var label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('class', 'cell-label');
+          label.setAttribute('x', cx);
+          label.setAttribute('y', cy);
+          label.setAttribute('text-anchor', 'middle');
+          label.setAttribute('dominant-baseline', 'central');
+          label.setAttribute('font-size', Math.max(10, Math.floor(w * 0.16)));
+          label.textContent = '';
+
+          g.appendChild(poly);
+          g.appendChild(label);
+
+          g.addEventListener('keydown', function(e){
+            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); this.dispatchEvent(new Event('click')); }
+          });
+          // Default cells do nothing for now
+          g.addEventListener('click', function(e){});
+
+          svg.appendChild(g);
+          x += xStep;
+        }
+        y += yStep;
+      }
+
+      // Highlight central ring (center + its six neighbors) with brighter gold
+      var groups = Array.prototype.slice.call(svg.querySelectorAll('g.hex-cell'));
+      if (groups.length) {
+        // Compute the visual center by picking the group closest to viewport center
+        var bestIdx = -1, bestDist = Infinity, bestCenter = {cx: vw/2, cy: vh/2};
+        groups.forEach(function(gr, idx){
+          var poly = gr.querySelector('polygon');
+          var pts = poly.getAttribute('points').split(' ').map(function(p){var a=p.split(',');return {x:parseFloat(a[0]), y:parseFloat(a[1])};});
+          var cx = (pts[0].x + pts[3].x) / 2; // average of top and bottom points x -> center x
+          var cy = (pts[0].y + pts[3].y) / 2; // average y
+          var dx = cx - vw/2, dy = cy - vh/2;
+          var d = dx*dx + dy*dy;
+          if (d < bestDist) { bestDist = d; bestIdx = idx; }
+        });
+        if (bestIdx >= 0) {
+          var center = groups[bestIdx];
+          var cpoly = center.querySelector('polygon');
+          cpoly.setAttribute('stroke', '#ffd24d');
+          cpoly.setAttribute('stroke-width', '2');
+
+          // Find 6 nearest neighbors by centroid distance
+          var centroids = groups.map(function(gr){
+            var p = gr.querySelector('polygon').getAttribute('points').split(' ').map(function(pt){var a=pt.split(',');return {x:parseFloat(a[0]), y:parseFloat(a[1])};});
+            return { g: gr, x: (p[0].x + p[3].x)/2, y: (p[0].y + p[3].y)/2 };
+          });
+          var centerCent = centroids[bestIdx];
+          centroids.splice(bestIdx,1);
+          centroids.sort(function(a,b){
+            var da = (a.x-centerCent.x)**2 + (a.y-centerCent.y)**2;
+            var db = (b.x-centerCent.x)**2 + (b.y-centerCent.y)**2;
+            return da - db;
+          });
+          var six = centroids.slice(0,6);
+          six.forEach(function(item){
+            var poly = item.g.querySelector('polygon');
+            poly.setAttribute('stroke', '#ffd24d');
+            poly.setAttribute('stroke-width', '2');
+          });
+
+          // Attach panel openers
+          var labels = ['Welcome','About','Shop','Projects','Future','Medical','Resources'];
+          var mapping = [center].concat(six.map(function(o){return o.g;}));
+          mapping.forEach(function(gr, i){
+            gr.addEventListener('click', function(){ openPanel(labels[i] || 'Info'); });
+            gr.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel(labels[i] || 'Info'); }});
+            var t = gr.querySelector('text'); if (t && labels[i]) { t.textContent = labels[i]; }
+          });
+        }
+      }
+    }
+
+    var resizeTimer;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(buildHoneycomb, 120);
+    });
+    window.addEventListener('orientationchange', function(){
+      setTimeout(buildHoneycomb, 200);
+    });
+    document.addEventListener('DOMContentLoaded', buildHoneycomb);
+
+    // Panel controls
+    function openPanel(title) {
+      var backdrop = document.getElementById('panelBackdrop');
+      var titleEl = document.getElementById('panelTitle');
+      var contentEl = document.getElementById('panelContent');
+      titleEl.textContent = title;
+      contentEl.innerHTML = title === 'Welcome' ? '<p>Welcome to HempHive. Explore the comb to discover About, Shop, Projects, Future, Medical, and Resources.</p>' : ('<p>'+title+' content coming soon…</p>');
+      backdrop.classList.add('show');
+      backdrop.setAttribute('aria-hidden','false');
+    }
+    function closePanel() {
+      var backdrop = document.getElementById('panelBackdrop');
+      backdrop.classList.remove('show');
+      backdrop.setAttribute('aria-hidden','true');
+    }
+    document.getElementById('panelClose').addEventListener('click', closePanel);
+    document.getElementById('panelBackdrop').addEventListener('click', function(e){ if (e.target.id === 'panelBackdrop') closePanel(); });
+    window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePanel(); });
+  </script>
+
+</body>
+</html>
