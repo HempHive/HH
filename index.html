@@ -41,6 +41,23 @@
       z-index: 1;
     }
 
+    /* Background image that reveals on Welcome */
+    .bg-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('main.png') center center / contain no-repeat;
+      background-color: #000;
+      z-index: 0;
+      opacity: 0;
+      transform: scale(1);
+      transition: opacity 1.6s ease, transform 3s ease;
+      will-change: opacity, transform;
+    }
+    .bg-image.show { opacity: 1; transform: scale(1.03); }
+
     @keyframes subtleGlow {
       0%, 100% { opacity: 0.2; }
       50% { opacity: 0.4; }
@@ -237,6 +254,80 @@
     /* Staggered reveal when page loads */
     .hex-button.reveal { opacity: 1; }
 
+    /* A button (appears after Welcome) */
+    #aButton {
+      position: fixed;
+      left: 50%;
+      top: 82%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 121px; /* width * 0.866 approx */
+      z-index: 6;
+      display: none;
+      font-size: 28px;
+    }
+    #aButton .label { opacity: 1; transform: none; }
+
+    /* Video overlay */
+    .video-overlay {
+      position: fixed;
+      inset: 0;
+      background: transparent;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 7;
+      pointer-events: none; /* allow interactions with page when video shown */
+    }
+    .video-overlay.show { display: flex; pointer-events: none; }
+    .video-overlay video {
+      max-width: min(920px, 92vw);
+      max-height: min(600px, 76vh);
+      border: none;
+      border-radius: 0;
+      background: transparent; /* keep alpha from video */
+      box-shadow: none;
+      /* Default to normal blending to honor true alpha in WebM */
+      mix-blend-mode: normal;
+      pointer-events: none;
+    }
+
+    /* Ambient full-bleed video overlay (toggled via right-click on central button) */
+    #ambientVideo {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 110vw; /* extend slightly beyond viewport */
+      height: 110vh;
+      object-fit: cover;
+      opacity: 0.5; /* similar subtle opacity */
+      z-index: 4; /* below buttons and hex UI overlays */
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Direct video styling, independent of overlay, to guarantee transparency */
+    /* Overlay videos (center + four sides) */
+    .overlay-video {
+      position: fixed;
+      top: 62%;
+      transform: translate(-50%, -50%);
+      width: 33vw;
+      height: auto;
+      background: transparent;
+      mix-blend-mode: normal;
+      pointer-events: none;
+      z-index: 10000;
+      display: none;
+    }
+    /* Positions: two left, center, two right */
+    #vid-bln { left: 20%; }
+    #vid-grn { left: 35%; }
+    #lucky-video { left: 50%; }
+    #vid-red { left: 65%; }
+    #vid-pme { left: 80%; }
+
     @media (max-width: 768px) {
       .hex,
       .hex-button {
@@ -255,6 +346,14 @@
   <!-- Glow effect -->
   <div class="glow-overlay"></div>
 
+  <!-- Ambient background video (hidden by default) -->
+  <video id="ambientVideo" preload="metadata" playsinline webkit-playsinline muted loop>
+    <source src="output.webm" type="video/webm">
+  </video>
+
+  <!-- Hidden background hero image (reveals on Welcome) -->
+  <div id="bgMain" class="bg-image" aria-hidden="true"></div>
+
   <!-- Top emoji -->
   <div class="center-container">
     <div class="hex" id="hex">🌿🐝</div>
@@ -269,6 +368,42 @@
   <div class="widebar top"><div class="content"></div></div>
   <div class="widebar bottom"><div class="content"></div></div>
 
+  <!-- Control Buttons (revealed post-Welcome) -->
+  <button id="aButton" class="hex-button" aria-label="Play central video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:140px;height:121px;">
+    <span class="label">😳</span>
+  </button>
+  <button id="btn-bln" class="hex-button" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+    <span class="label">🔵</span>
+  </button>
+  <button id="btn-grn" class="hex-button" aria-label="Play green video" style="left:35%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+    <span class="label">🟢</span>
+  </button>
+  <button id="btn-red" class="hex-button" aria-label="Play red video" style="left:65%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+    <span class="label">🔴</span>
+  </button>
+  <button id="btn-pme" class="hex-button" aria-label="Play purple video" style="left:80%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+    <span class="label">🟣</span>
+  </button>
+
+  <!-- Videos -->
+  <div id="videoOverlay" class="video-overlay" aria-hidden="true">
+    <video id="vid-bln" class="overlay-video" preload="metadata" playsinline webkit-playsinline muted loop>
+      <source src="bln.webm" type="video/webm">
+    </video>
+    <video id="vid-grn" class="overlay-video" preload="metadata" playsinline webkit-playsinline muted loop>
+      <source src="grn.webm" type="video/webm">
+    </video>
+    <video id="lucky-video" class="overlay-video" preload="metadata" playsinline webkit-playsinline loop>
+      <source src="marissa.webm" type="video/webm">
+    </video>
+    <video id="vid-red" class="overlay-video" preload="metadata" playsinline webkit-playsinline muted loop>
+      <source src="red.webm" type="video/webm">
+    </video>
+    <video id="vid-pme" class="overlay-video" preload="metadata" playsinline webkit-playsinline muted loop>
+      <source src="pme.webm" type="video/webm">
+    </video>
+  </div>
+
   <!-- Modal panel overlay -->
   <div id="panelBackdrop" class="panel-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="panel">
@@ -280,6 +415,9 @@
 
   <!-- Interactions -->
   <script>
+    // Track whether the welcome reveal has been triggered
+    var welcomeRevealed = false;
+
     // Fade out the hero emoji after a brief moment
     setTimeout(() => {
       var topHex = document.getElementById('hex');
@@ -292,6 +430,7 @@
     function buildHoneycomb() {
       var svg = document.getElementById('honeycombSvg');
       if (!svg) return;
+      if (welcomeRevealed) return; // Skip building once reveal has happened
 
       var vw = window.innerWidth || document.documentElement.clientWidth;
       var vh = window.innerHeight || document.documentElement.clientHeight;
@@ -495,8 +634,57 @@
     });
     document.addEventListener('DOMContentLoaded', buildHoneycomb);
 
+    // Trigger reveal animation: split hex grid and show background
+    function triggerWelcomeReveal() {
+      if (welcomeRevealed) return;
+      welcomeRevealed = true;
+
+      var svg = document.getElementById('honeycombSvg');
+      var honey = document.getElementById('honeycomb');
+      var bg = document.getElementById('bgMain');
+      var aBtn = document.getElementById('aButton');
+      if (!svg) return;
+
+      // Show the background image with fade + slow zoom
+      if (bg) { bg.classList.add('show'); }
+
+      // Disable interactions on the comb
+      if (honey) { honey.style.pointerEvents = 'none'; }
+
+      var groups = Array.prototype.slice.call(svg.querySelectorAll('g.hex-cell'));
+      var centerX = (window.innerWidth || document.documentElement.clientWidth) / 2;
+      var shift = Math.round((window.innerWidth || document.documentElement.clientWidth) * 0.65); // almost out of view
+
+      groups.forEach(function(g){
+        try {
+          var bbox = g.getBBox();
+          var cx = bbox.x + bbox.width / 2;
+          var dir = cx < centerX ? -1 : 1;
+          g.style.transition = 'transform 1.8s ease-in-out, opacity 1.8s ease-in-out';
+          g.style.transform = 'translateX(' + (dir * shift) + 'px)';
+          g.style.opacity = '0.2';
+        } catch(e) {
+          // fallback: move right side by default if bbox fails
+          g.style.transition = 'transform 1.8s ease-in-out, opacity 1.8s ease-in-out';
+          g.style.transform = 'translateX(' + shift + 'px)';
+          g.style.opacity = '0.2';
+        }
+      });
+
+      // Optional: after animation, keep SVG lightweight
+      setTimeout(function(){
+        try { svg.style.filter = 'blur(1px)'; } catch(e){}
+        // Reveal control buttons
+        ;['aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
+          var b = document.getElementById(id);
+          if (b) b.style.display = 'inline-flex';
+        });
+      }, 1900);
+    }
+
     // Panel controls
     function openPanel(title) {
+      if (title === 'Welcome') { triggerWelcomeReveal(); return; }
       var backdrop = document.getElementById('panelBackdrop');
       var titleEl = document.getElementById('panelTitle');
       var contentEl = document.getElementById('panelContent');
@@ -660,6 +848,70 @@
         cell.classList.remove('playing');
       }
     }
+
+    // Multiple video controls: each button toggles its video; only last clicked has audio
+    (function(){
+      var overlay = document.getElementById('videoOverlay');
+      var config = [
+        { id: 'vid-bln', btn: 'btn-bln' },
+        { id: 'vid-grn', btn: 'btn-grn' },
+        { id: 'lucky-video', btn: 'aButton' },
+        { id: 'vid-red', btn: 'btn-red' },
+        { id: 'vid-pme', btn: 'btn-pme' }
+      ];
+      function toggleVideo(targetId) {
+        if (!welcomeRevealed) return;
+        var v = document.getElementById(targetId);
+        if (!v) return;
+        var turningOn = v.style.display !== 'block';
+        if (turningOn) {
+          if (overlay) { overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
+          // Show and play this one
+          v.style.display = 'block';
+          try { v.play(); } catch(e){}
+          try { v.muted = false; v.volume = 1.0; } catch(e){}
+          // Keep others visible if they are already on, but mute them
+          config.forEach(function(item){
+            var o = document.getElementById(item.id);
+            if (!o || o === v) return;
+            o.muted = true;
+            if (o.style.display === 'block') { try { o.play(); } catch(_e){} }
+          });
+        } else {
+          try { v.pause(); } catch(e){}
+          v.style.display = 'none';
+          // Keep overlay if any other video is still visible
+          var anyVisible = config.some(function(item){ var el = document.getElementById(item.id); return el && el.style.display === 'block'; });
+          if (!anyVisible && overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+        }
+      }
+      // Wire buttons
+      config.forEach(function(item){
+        var btn = document.getElementById(item.btn);
+        if (!btn) return;
+        btn.addEventListener('click', function(){ toggleVideo(item.id); });
+        // Right-click on central button toggles ambient video
+        if (item.btn === 'aButton') {
+          btn.addEventListener('contextmenu', function(e){
+            e.preventDefault();
+            var amb = document.getElementById('ambientVideo');
+            if (!amb) return;
+            if (amb.style.display !== 'block') {
+              amb.style.display = 'block';
+              try { amb.play(); } catch(_e){}
+            } else {
+              try { amb.pause(); } catch(_e){}
+              amb.style.display = 'none';
+            }
+          });
+        }
+      });
+      // ESC closes all
+      window.addEventListener('keydown', function(e){ if (e.key === 'Escape') {
+        config.forEach(function(item){ var v = document.getElementById(item.id); if (!v) return; try { v.pause(); } catch(err){} v.style.display = 'none'; v.muted = true; });
+        if (overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+      }});
+    })();
   </script>
 
 </body>
