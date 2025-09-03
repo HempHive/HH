@@ -371,6 +371,56 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
       pointer-events: auto;
     }
+
+    /* AutoTrader full-window panel */
+    .auto-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10004;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .auto-backdrop.show { opacity: 1; pointer-events: auto; }
+    .auto-panel {
+      width: 96vw;
+      height: 94vh;
+      background: #0b0b0b;
+      border: 1px solid #ffcc33;
+      border-radius: 12px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 30px rgba(255, 204, 51, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .auto-panel iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #111;
+    }
+    .auto-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid #ffcc33;
+      color: #ffda4d;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: filter 0.2s ease;
+      z-index: 1;
+    }
+    .auto-close:hover { filter: brightness(1.2); }
   </style>
 </head>
 <body>
@@ -439,6 +489,14 @@
   <!-- Focus preview overlay -->
   <div id="focusOverlay" aria-hidden="true">
     <video id="focusVideo" preload="metadata" playsinline webkit-playsinline loop></video>
+  </div>
+
+  <!-- AutoTrader full-window panel -->
+  <div id="autoTraderBackdrop" class="auto-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="auto-panel">
+      <button id="autoClose" class="auto-close" aria-label="Close">✕</button>
+      <iframe id="autoFrame" src="" title="AutoTrader"></iframe>
+    </div>
   </div>
 
   <script>
@@ -810,6 +868,7 @@
     // Panel controls
     function openPanel(title) {
       if (title === 'Welcome') { triggerWelcomeReveal(); return; }
+      if (title === 'AutoTrader') { openAutoTraderPanel(); return; }
       var backdrop = document.getElementById('panelBackdrop');
       var titleEl = document.getElementById('panelTitle');
       var contentEl = document.getElementById('panelContent');
@@ -826,6 +885,27 @@
     document.getElementById('panelClose').addEventListener('click', closePanel);
     document.getElementById('panelBackdrop').addEventListener('click', function(e){ if (e.target.id === 'panelBackdrop') closePanel(); });
     window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePanel(); });
+
+    // AutoTrader controls
+    function openAutoTraderPanel() {
+      var backdrop = document.getElementById('autoTraderBackdrop');
+      var frame = document.getElementById('autoFrame');
+      if (frame && !frame.src) { frame.src = 'https://hemphive.github.io/ATB2/'; }
+      backdrop.classList.add('show');
+      backdrop.setAttribute('aria-hidden','false');
+    }
+    function closeAutoTraderPanel() {
+      var backdrop = document.getElementById('autoTraderBackdrop');
+      backdrop.classList.remove('show');
+      backdrop.setAttribute('aria-hidden','true');
+    }
+    (function(){
+      var ac = document.getElementById('autoClose');
+      var ab = document.getElementById('autoTraderBackdrop');
+      if (ac) ac.addEventListener('click', closeAutoTraderPanel);
+      if (ab) ab.addEventListener('click', function(e){ if (e.target.id === 'autoTraderBackdrop') closeAutoTraderPanel(); });
+      window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeAutoTraderPanel(); });
+    })();
 
     // Music panel & player
     var radioList = [];
