@@ -134,7 +134,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 5;
+      z-index: 10001;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease;
@@ -225,6 +225,15 @@
       opacity: 0.9;
     }
 
+    /* Circle style for primary control buttons */
+    .hex-button.circle-btn {
+      clip-path: none;
+      border-radius: 50%;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
     .hex-button .label {
       opacity: 0;
       transform: translateY(6px);
@@ -276,8 +285,8 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 7;
-      pointer-events: none; /* allow interactions with page when video shown */
+      z-index: 5; /* keep overlay behind buttons so buttons stay clickable */
+      pointer-events: none; /* default off; enabled when shown */
     }
     .video-overlay.show { display: flex; pointer-events: none; }
     .video-overlay video {
@@ -289,7 +298,7 @@
       box-shadow: none;
       /* Default to normal blending to honor true alpha in WebM */
       mix-blend-mode: normal;
-      pointer-events: none;
+      pointer-events: auto;
     }
 
     /* Ambient full-bleed video overlay (toggled via right-click on central button) */
@@ -318,7 +327,7 @@
       background: transparent;
       mix-blend-mode: normal;
       pointer-events: none;
-      z-index: 10000;
+      z-index: 4; /* below the buttons */
       display: none;
     }
     /* Positions: two left, center, two right */
@@ -338,6 +347,29 @@
       .hex-button {
         height: 13.8vw;
       }
+    }
+    /* Focus preview overlay */
+    #focusOverlay {
+      position: fixed;
+      inset: 0;
+      background: #000 url('prv.png') center center / cover no-repeat;
+      z-index: 10005;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 300ms ease;
+    }
+    #focusOverlay.show { opacity: 1; visibility: visible; }
+    #focusVideo {
+      height: 70vh; /* 70% of viewport height as requested */
+      width: auto;
+      background: transparent;
+      border: 0;
+      border-radius: 4px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      pointer-events: auto;
     }
   </style>
 </head>
@@ -369,19 +401,19 @@
   <div class="widebar bottom"><div class="content"></div></div>
 
   <!-- Control Buttons (revealed post-Welcome) -->
-  <button id="aButton" class="hex-button" aria-label="Play central video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:140px;height:121px;">
+  <button id="aButton" class="hex-button circle-btn" aria-label="Play central video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:140px;height:121px;">
     <span class="label">😳</span>
   </button>
-  <button id="btn-bln" class="hex-button" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
     <span class="label">🔵</span>
   </button>
-  <button id="btn-grn" class="hex-button" aria-label="Play green video" style="left:35%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-grn" class="hex-button circle-btn" aria-label="Play green video" style="left:35%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
     <span class="label">🟢</span>
   </button>
-  <button id="btn-red" class="hex-button" aria-label="Play red video" style="left:65%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-red" class="hex-button circle-btn" aria-label="Play red video" style="left:65%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
     <span class="label">🔴</span>
   </button>
-  <button id="btn-pme" class="hex-button" aria-label="Play purple video" style="left:80%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-pme" class="hex-button circle-btn" aria-label="Play purple video" style="left:80%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
     <span class="label">🟣</span>
   </button>
 
@@ -404,6 +436,32 @@
     </video>
   </div>
 
+  <!-- Focus preview overlay -->
+  <div id="focusOverlay" aria-hidden="true">
+    <video id="focusVideo" preload="metadata" playsinline webkit-playsinline loop></video>
+  </div>
+
+  <script>
+    // Optional PNG icon support for circular buttons
+    (function(){
+      function trySetBackground(id, pngName) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var url = pngName;
+        var img = new Image();
+        img.onload = function(){ el.style.backgroundImage = 'url(' + url + ')'; };
+        img.onerror = function(){ el.style.backgroundImage = ''; };
+        img.src = url;
+      }
+      // Map buttons to optional pngs; fallback to labels if not found
+      trySetBackground('btn-bln', 'btn-bln.png');
+      trySetBackground('btn-grn', 'btn-grn.png');
+      trySetBackground('aButton', 'btn-center.png');
+      trySetBackground('btn-red', 'btn-red.png');
+      trySetBackground('btn-pme', 'btn-pme.png');
+    })();
+  </script>
+
   <!-- Modal panel overlay -->
   <div id="panelBackdrop" class="panel-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="panel">
@@ -417,6 +475,38 @@
   <script>
     // Track whether the welcome reveal has been triggered
     var welcomeRevealed = false;
+    // Background image metrics for positioning media relative to the hero
+    var bgMetrics = { ready: false, left: 0, top: 0, width: 0, height: 0, aspect: 16/9 };
+    // Layout config for overlay videos and buttons (tweak here for trial-and-error)
+    var mediaLayout = window.mediaLayout || {
+      sizeMultiplierVideos: 2,
+      sizeMultiplierButtons: 1, // 50% smaller than before (was 2 -> now 1)
+      videos: {
+        'vid-bln': { x: 12, y: 62, w: 20 },
+        'vid-grn': { x: 32, y: 62, w: 20 },
+        'lucky-video': { x: 50, y: 62, w: 22 },
+        'vid-red': { x: 68, y: 62, w: 20 },
+        'vid-pme': { x: 88, y: 62, w: 20 }
+      },
+      buttons: {
+        'btn-bln': { x: 12, y: 86, w: 10 },
+        'btn-grn': { x: 32, y: 86, w: 10 },
+        'aButton': { x: 50, y: 86, w: 12 },
+        'btn-red': { x: 68, y: 86, w: 10 },
+        'btn-pme': { x: 88, y: 86, w: 10 }
+      }
+    };
+    (function initBgAspect(){
+      var img = new Image();
+      img.onload = function(){
+        if (img.naturalWidth && img.naturalHeight) {
+          bgMetrics.aspect = img.naturalWidth / img.naturalHeight;
+          computeBgMetrics();
+          positionMediaElements();
+        }
+      };
+      img.src = 'main.png';
+    })();
 
     // Fade out the hero emoji after a brief moment
     setTimeout(() => {
@@ -591,12 +681,14 @@
           window.__ringLabels = ringLabels.slice();
 
           // Apply labels to the six neighbors
+          var labelToGroup = {};
           neighborOrdered.forEach(function(obj, idx){
             var name = ringLabels[idx] || 'Info';
             var gr = obj.g;
             gr.addEventListener('click', function(){ openPanel(name); });
             gr.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel(name); }});
             var t = gr.querySelector('text'); if (t) { t.textContent = name; }
+            labelToGroup[name] = gr;
           });
 
           // Center mapping
@@ -620,6 +712,39 @@
             music.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openMusicPanel(); }});
             var mt = music.querySelector('text'); if (mt) { mt.textContent = 'Music'; }
           }
+
+          // Add an extra labeled hex for AutoTrader below Resources and About
+          try {
+            var resGr = labelToGroup['Resources'];
+            var aboutGr = labelToGroup['About'];
+            if (resGr && aboutGr) {
+              function centroidOf(g){
+                var p = g.querySelector('polygon').getAttribute('points').split(' ').map(function(pt){ var a = pt.split(','); return {x:parseFloat(a[0]), y:parseFloat(a[1])}; });
+                return { x: (p[0].x + p[3].x)/2, y: (p[0].y + p[3].y)/2 };
+              }
+              var cA = centroidOf(aboutGr);
+              var cR = centroidOf(resGr);
+              var targetX = (cA.x + cR.x) / 2;
+              var targetY = (cA.y + cR.y) / 2 + yStep; // a bit below midpoint
+              var used = new Set([aboutGr, resGr, center].map(function(g){return g;}));
+              neighborOrdered.forEach(function(o){ used.add(o.g); });
+              var bestAuto = null, bestAutoD = Infinity;
+              centroids.forEach(function(entry){
+                if (used.has(entry.g)) return;
+                var dx = entry.x - targetX, dy = entry.y - targetY;
+                var d = dx*dx + dy*dy;
+                if (d < bestAutoD) { bestAutoD = d; bestAuto = entry.g; }
+              });
+              if (bestAuto) {
+                var polyAuto = bestAuto.querySelector('polygon');
+                polyAuto.setAttribute('stroke', '#ffd24d');
+                polyAuto.setAttribute('stroke-width', '2');
+                var tAuto = bestAuto.querySelector('text'); if (tAuto) { tAuto.textContent = 'AutoTrader'; }
+                bestAuto.addEventListener('click', function(){ openPanel('AutoTrader'); });
+                bestAuto.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel('AutoTrader'); }});
+              }
+            }
+          } catch(_e) {}
         }
       }
     }
@@ -627,12 +752,12 @@
     var resizeTimer;
     window.addEventListener('resize', function(){
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(buildHoneycomb, 120);
+      resizeTimer = setTimeout(function(){ buildHoneycomb(); computeBgMetrics(); positionMediaElements(); }, 120);
     });
     window.addEventListener('orientationchange', function(){
-      setTimeout(buildHoneycomb, 200);
+      setTimeout(function(){ buildHoneycomb(); computeBgMetrics(); positionMediaElements(); }, 200);
     });
-    document.addEventListener('DOMContentLoaded', buildHoneycomb);
+    document.addEventListener('DOMContentLoaded', function(){ buildHoneycomb(); computeBgMetrics(); positionMediaElements(); });
 
     // Trigger reveal animation: split hex grid and show background
     function triggerWelcomeReveal() {
@@ -849,6 +974,19 @@
       }
     }
 
+    // M key toggles the Music panel open/close
+    window.addEventListener('keydown', function(e){
+      if (e.key === 'm' || e.key === 'M') {
+        var backdrop = document.getElementById('panelBackdrop');
+        var titleEl = document.getElementById('panelTitle');
+        if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
+          closePanel();
+        } else {
+          openMusicPanel();
+        }
+      }
+    });
+
     // Multiple video controls: each button toggles its video; only last clicked has audio
     (function(){
       var overlay = document.getElementById('videoOverlay');
@@ -906,12 +1044,130 @@
           });
         }
       });
+      // Clicking any visible overlay video enters focus preview mode
+      config.forEach(function(item){
+        var v = document.getElementById(item.id);
+        if (!v) return;
+        v.addEventListener('click', function(){ enterFocusMode(item.id); });
+      });
       // ESC closes all
       window.addEventListener('keydown', function(e){ if (e.key === 'Escape') {
+        if (focusActive) { exitFocusMode(); return; }
         config.forEach(function(item){ var v = document.getElementById(item.id); if (!v) return; try { v.pause(); } catch(err){} v.style.display = 'none'; v.muted = true; });
         if (overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
       }});
     })();
+
+    // Focus preview logic
+    var focusActive = false;
+    var prevOverlayState = { visibleIds: [] };
+    function enterFocusMode(targetId) {
+      if (focusActive) return;
+      focusActive = true;
+      var overlay = document.getElementById('videoOverlay');
+      var ids = ['vid-bln','vid-grn','lucky-video','vid-red','vid-pme'];
+      prevOverlayState.visibleIds = ids.filter(function(id){ var v = document.getElementById(id); return v && v.style.display === 'block'; });
+      // Hide and pause all overlay videos
+      ids.forEach(function(id){ var v = document.getElementById(id); if (!v) return; try { v.pause(); } catch(e){} v.style.display = 'none'; });
+      if (overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+      // Determine source from clicked video element
+      var clicked = document.getElementById(targetId);
+      var src = '';
+      if (clicked) {
+        var s = clicked.querySelector('source');
+        src = s ? s.getAttribute('src') : (clicked.currentSrc || clicked.src || '');
+      }
+      var f = document.getElementById('focusVideo');
+      if (f) {
+        try { f.pause(); } catch(_e){}
+        f.src = '';
+        f.load();
+        if (src) f.src = src;
+        f.muted = false;
+        try { f.play(); } catch(_e){}
+      }
+      var layer = document.getElementById('focusOverlay');
+      if (layer) { layer.classList.add('show'); layer.setAttribute('aria-hidden','false'); }
+    }
+    function exitFocusMode() {
+      if (!focusActive) return;
+      focusActive = false;
+      var f = document.getElementById('focusVideo');
+      if (f) { try { f.pause(); } catch(_e){} f.src=''; }
+      var layer = document.getElementById('focusOverlay');
+      if (layer) { layer.classList.remove('show'); layer.setAttribute('aria-hidden','true'); }
+      // Restore previously visible overlay videos
+      var overlay = document.getElementById('videoOverlay');
+      if (overlay && prevOverlayState.visibleIds && prevOverlayState.visibleIds.length) {
+        overlay.classList.add('show');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      (prevOverlayState.visibleIds || []).forEach(function(id){
+        var v = document.getElementById(id);
+        if (v) { v.style.display = 'block'; try { v.play(); } catch(_e){} }
+      });
+      prevOverlayState.visibleIds = [];
+    }
+
+    // Compute hero background displayed rect for relative positioning
+    function computeBgMetrics() {
+      var vw = window.innerWidth || document.documentElement.clientWidth;
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      var aspect = bgMetrics.aspect || (16/9);
+      var viewportAspect = vw / vh;
+      var width, height, left, top;
+      if (viewportAspect > aspect) {
+        // viewport wider than image -> image height fills
+        height = vh;
+        width = height * aspect;
+      } else {
+        // viewport taller than image -> image width fills
+        width = vw;
+        height = width / aspect;
+      }
+      left = (vw - width) / 2;
+      top = (vh - height) / 2;
+      bgMetrics.left = left;
+      bgMetrics.top = top;
+      bgMetrics.width = width;
+      bgMetrics.height = height;
+      bgMetrics.ready = true;
+    }
+
+    // Position overlay videos and related buttons relative to background image
+    function positionMediaElements() {
+      if (!bgMetrics.ready) return;
+      var defsVideo = mediaLayout.videos || {};
+      Object.keys(defsVideo).forEach(function(id){
+        var base = defsVideo[id];
+        var d = { x: base.x, y: base.y, w: (base.w * (mediaLayout.sizeMultiplierVideos || 1)) };
+        var el = document.getElementById(id);
+        if (!el) return;
+        var pxLeft = bgMetrics.left + (d.x/100) * bgMetrics.width;
+        var pxTop = bgMetrics.top + (d.y/100) * bgMetrics.height;
+        el.style.left = pxLeft + 'px';
+        el.style.top = pxTop + 'px';
+        el.style.width = (d.w/100 * bgMetrics.width) + 'px';
+        el.style.height = 'auto';
+        el.style.transform = 'translate(-50%, -50%)';
+      });
+      var defsBtn = mediaLayout.buttons || {};
+      Object.keys(defsBtn).forEach(function(id){
+        var base = defsBtn[id];
+        var d = { x: base.x, y: base.y, w: (base.w * (mediaLayout.sizeMultiplierButtons || 1)) };
+        var el = document.getElementById(id);
+        if (!el) return;
+        var pxLeft = bgMetrics.left + (d.x/100) * bgMetrics.width;
+        var pxTop = bgMetrics.top + (d.y/100) * bgMetrics.height;
+        el.style.left = pxLeft + 'px';
+        el.style.top = pxTop + 'px';
+        var w = (d.w/100 * bgMetrics.width);
+        el.style.width = w + 'px';
+        el.style.height = w + 'px';
+        el.style.transform = 'translate(-50%, -50%)';
+        el.style.zIndex = '6';
+      });
+    }
   </script>
 
 </body>
