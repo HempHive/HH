@@ -230,9 +230,28 @@
       clip-path: none;
       border-radius: 50%;
       background-position: center;
-      background-size: cover;
+      background-size: contain; /* show full PNG without crop */
       background-repeat: no-repeat;
+      background-color: transparent;
+      border: 0;
+      box-shadow: none;
+      animation: pngPulse 6s ease-in-out infinite;
+      filter: brightness(1) saturate(1);
+      transition: opacity 0.35s ease, filter 0.25s ease;
     }
+    .hex-button.circle-btn:hover,
+    .hex-button.circle-btn:focus-visible {
+      border-color: transparent;
+      box-shadow: none;
+      outline: none;
+      filter: brightness(1.06) saturate(1.06);
+    }
+    .hex-button.circle-btn .label { display: none !important; }
+    @keyframes pngPulse {
+      0%, 100% { filter: brightness(1) saturate(1); }
+      50% { filter: brightness(1.05) saturate(1.08); }
+    }
+    body.buttons-dimmed .hex-button.circle-btn { opacity: 0.5; }
 
     .hex-button .label {
       opacity: 0;
@@ -244,8 +263,8 @@
       padding: 0 6px;
     }
 
-    .hex-button:hover,
-    .hex-button:focus-visible {
+    .hex-button:not(.circle-btn):hover,
+    .hex-button:not(.circle-btn):focus-visible {
       background: radial-gradient(circle at 50% 50%, rgba(255, 204, 51, 0.25), rgba(0,0,0,0.15));
       border-color: #ffcc33;
       box-shadow: 0 0 14px rgba(255, 204, 51, 0.45), 0 0 34px rgba(255, 153, 0, 0.25);
@@ -352,7 +371,7 @@
     #focusOverlay {
       position: fixed;
       inset: 0;
-      background: #000 url('prv.png') center center / cover no-repeat;
+      background: #000 url('prv.png') center center / contain no-repeat;
       z-index: 10005;
       display: flex;
       align-items: center;
@@ -878,6 +897,8 @@
           var b = document.getElementById(id);
           if (b) b.style.display = 'inline-flex';
         });
+        // start inactivity tracker for circle buttons once revealed
+        try { startButtonsInactivityTracker(); } catch(_e){}
       }, 1900);
     }
 
@@ -1220,6 +1241,21 @@
         if (v) { v.style.display = 'block'; try { v.play(); } catch(_e){} }
       });
       prevOverlayState.visibleIds = [];
+    }
+
+    // Inactivity fade for circle buttons
+    var __buttonsInactivity = { timer: null, initialized: false, delayMs: 7000 };
+    function startButtonsInactivityTracker() {
+      if (__buttonsInactivity.initialized) return;
+      __buttonsInactivity.initialized = true;
+      var events = ['mousemove','mousedown','touchstart','keydown','wheel'];
+      events.forEach(function(evt){ window.addEventListener(evt, resetButtonsInactivityTimer, { passive: true }); });
+      resetButtonsInactivityTimer();
+    }
+    function resetButtonsInactivityTimer() {
+      try { document.body.classList.remove('buttons-dimmed'); } catch(_e){}
+      if (__buttonsInactivity.timer) { clearTimeout(__buttonsInactivity.timer); }
+      __buttonsInactivity.timer = setTimeout(function(){ try { document.body.classList.add('buttons-dimmed'); } catch(_e){} }, __buttonsInactivity.delayMs);
     }
 
     // Compute hero background displayed rect for relative positioning
