@@ -3,18 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HempHive • Welcome</title>
+  <title>HempHive • Welcome to the Future of Hemp Innovation</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="HempHive - Discover the future of hemp innovation through interactive experiences, music streaming, and sustainable technology. Explore our honeycomb ecosystem." />
+  <meta name="keywords" content="hemp, innovation, sustainable technology, music streaming, interactive experience, hemp farming, medical hemp, resources" />
+  <meta name="author" content="HempHive" />
+  <meta name="robots" content="index, follow" />
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="HempHive • Welcome to the Future of Hemp Innovation" />
+  <meta property="og:description" content="Discover the future of hemp innovation through interactive experiences, music streaming, and sustainable technology." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://hemphive.farm" />
+  <meta property="og:image" content="https://hemphive.farm/main.png" />
+  <meta property="og:site_name" content="HempHive" />
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HempHive • Welcome to the Future of Hemp Innovation" />
+  <meta name="twitter:description" content="Discover the future of hemp innovation through interactive experiences, music streaming, and sustainable technology." />
+  <meta name="twitter:image" content="https://hemphive.farm/main.png" />
+  
+  <!-- Favicon and Icons -->
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon.ico" />
+  
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="main.png" as="image" />
+  <link rel="preload" href="marissa.webm" as="video" />
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ffcc33" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HempHive" />
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "HempHive",
+    "url": "https://hemphive.farm",
+    "logo": "https://hemphive.farm/main.png",
+    "description": "HempHive - Discover the future of hemp innovation through interactive experiences, music streaming, and sustainable technology.",
+    "sameAs": []
+  }
+  </script>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       width: 100%;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
       overflow: hidden;
       background: black;
       animation: bgFade 3s ease-in-out forwards;
+      /* Performance optimizations */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
 
     @keyframes bgFade {
@@ -192,13 +243,13 @@
     body.show-bars .widebar.top { transform: translateY(0); opacity: 1; }
     body.show-bars .widebar.bottom { transform: translateY(0); opacity: 1; }
 
-    /* Music cell playing state */
+    /* Music cell playing state - Purple theme */
     .hex-cell.music.playing polygon {
-      stroke: #fff176; /* neon honey */
+      stroke: #9c27b0; /* Purple stroke */
       stroke-width: 2;
-      fill: #ffb300;
-      fill-opacity: 0.2; /* requested 0.4 opacity */
-      filter: drop-shadow(0 0 12px rgba(255, 246, 160, 0.75)) drop-shadow(0 0 22px rgba(255, 214, 64, 0.5));
+      fill: #e1bee7; /* Light purple fill */
+      fill-opacity: 0.3;
+      filter: drop-shadow(0 0 12px rgba(156, 39, 176, 0.75)) drop-shadow(0 0 22px rgba(156, 39, 176, 0.5));
     }
 
     .hex-button {
@@ -356,15 +407,74 @@
     #vid-red { left: 65%; }
     #vid-pme { left: 80%; }
 
+    /* Enhanced responsive design */
     @media (max-width: 768px) {
       .hex,
       .hex-button {
         width: 16vw;
         height: 16vw;
+        min-width: 60px;
+        min-height: 60px;
       }
 
       .hex-button {
         height: 13.8vw;
+        min-height: 52px;
+      }
+      
+      .widebar {
+        height: 48px;
+        font-size: 14px;
+      }
+      
+      .panel {
+        width: 95vw;
+        padding: 16px;
+      }
+      
+      .hex {
+        font-size: 2rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .hex,
+      .hex-button {
+        width: 20vw;
+        height: 20vw;
+        min-width: 50px;
+        min-height: 50px;
+      }
+      
+      .hex-button {
+        height: 17.3vw;
+        min-height: 43px;
+      }
+      
+      .widebar {
+        height: 44px;
+        font-size: 12px;
+      }
+      
+      .hex {
+        font-size: 1.5rem;
+      }
+    }
+    
+    /* High DPI display optimizations */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .hex-button.circle-btn {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+    }
+    
+    /* Reduced motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
       }
     }
     /* Focus preview overlay */
@@ -460,19 +570,20 @@
 <body>
 
   <!-- Glow effect -->
-  <div class="glow-overlay"></div>
+  <div class="glow-overlay" aria-hidden="true"></div>
 
   <!-- Ambient background video (hidden by default) -->
-  <video id="ambientVideo" preload="metadata" playsinline webkit-playsinline muted loop>
+  <video id="ambientVideo" preload="metadata" playsinline webkit-playsinline muted loop aria-label="Ambient background video">
     <source src="output.webm" type="video/webm">
+    <p>Your browser doesn't support video playback.</p>
   </video>
 
   <!-- Hidden background hero image (reveals on Welcome) -->
-  <div id="bgMain" class="bg-image" aria-hidden="true"></div>
+  <div id="bgMain" class="bg-image" aria-hidden="true" role="img" aria-label="HempHive hero background image"></div>
 
   <!-- Top emoji -->
   <div class="center-container">
-    <div class="hex" id="hex">🌿🐝</div>
+    <div class="hex" id="hex" role="img" aria-label="Hemp leaf and bee emoji">🌿🐝</div>
   </div>
 
   <!-- Honeycomb grid (SVG background + buttons perfectly aligned) -->
@@ -570,6 +681,37 @@
     var welcomeRevealed = false;
     // Background image metrics for positioning media relative to the hero
     var bgMetrics = { ready: false, left: 0, top: 0, width: 0, height: 0, aspect: 16/9 };
+    
+    // Error handling and loading states
+    var loadingStates = {
+      images: new Set(),
+      videos: new Set(),
+      audio: new Set()
+    };
+    
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.warn('HempHive: Resource loading error:', e.message);
+      // Could add user notification here
+    });
+    
+    // Loading indicator
+    function showLoadingIndicator(message) {
+      var indicator = document.getElementById('loadingIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'loadingIndicator';
+        indicator.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.8);color:#ffcc33;padding:10px;border-radius:5px;z-index:10000;font-size:14px;';
+        document.body.appendChild(indicator);
+      }
+      indicator.textContent = message;
+      indicator.style.display = 'block';
+    }
+    
+    function hideLoadingIndicator() {
+      var indicator = document.getElementById('loadingIndicator');
+      if (indicator) indicator.style.display = 'none';
+    }
     // Layout config for overlay videos and buttons (tweak here for trial-and-error)
     var mediaLayout = window.mediaLayout || {
       sizeMultiplierVideos: 2,
@@ -860,7 +1002,6 @@
       var svg = document.getElementById('honeycombSvg');
       var honey = document.getElementById('honeycomb');
       var bg = document.getElementById('bgMain');
-      var aBtn = document.getElementById('aButton');
       if (!svg) return;
 
       // Show the background image with fade + slow zoom
@@ -900,6 +1041,41 @@
         // start inactivity tracker for circle buttons once revealed
         try { startButtonsInactivityTracker(); } catch(_e){}
       }, 1900);
+    }
+    
+    // Return to main screen: reverse the welcome reveal
+    function returnToMainScreen() {
+      if (!welcomeRevealed) return;
+      
+      var svg = document.getElementById('honeycombSvg');
+      var honey = document.getElementById('honeycomb');
+      var bg = document.getElementById('bgMain');
+      if (!svg) return;
+
+      // Hide the background image
+      if (bg) { bg.classList.remove('show'); }
+
+      // Re-enable interactions on the comb
+      if (honey) { honey.style.pointerEvents = 'auto'; }
+
+      var groups = Array.prototype.slice.call(svg.querySelectorAll('g.hex-cell'));
+
+      groups.forEach(function(g){
+        g.style.transition = 'transform 1.8s ease-in-out, opacity 1.8s ease-in-out';
+        g.style.transform = 'translateX(0px)';
+        g.style.opacity = '1';
+      });
+
+      // Hide control buttons and reset SVG blur
+      setTimeout(function(){
+        try { svg.style.filter = 'none'; } catch(e){}
+        // Hide control buttons immediately when returning to main screen
+        ;['aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
+          var b = document.getElementById(id);
+          if (b) b.style.display = 'none';
+        });
+        welcomeRevealed = false;
+      }, 100); // Much faster transition
     }
 
     // Panel controls
@@ -1076,11 +1252,31 @@
 
     function playCurrent() {
       if (currentIdx < 0 || !radioList[currentIdx]) return;
+      showLoadingIndicator('Loading music...');
       try { audio.pause(); } catch(e){}
       audio.src = '';
       audio.load();
       audio.src = radioList[currentIdx].url;
-      audio.play().then(function(){ setMusicPlaying(true); }).catch(function(err){ console.warn('Play failed', err); });
+      
+      // Add error handling for audio
+      audio.addEventListener('error', function() {
+        console.warn('Audio loading failed:', radioList[currentIdx].name);
+        hideLoadingIndicator();
+        setMusicPlaying(false);
+      });
+      
+      audio.addEventListener('canplay', function() {
+        hideLoadingIndicator();
+      });
+      
+      audio.play().then(function(){ 
+        setMusicPlaying(true); 
+        hideLoadingIndicator();
+      }).catch(function(err){ 
+        console.warn('Play failed', err); 
+        hideLoadingIndicator();
+        setMusicPlaying(false);
+      });
       updateNowPlaying();
     }
     function stopMusic() { audio.pause(); setMusicPlaying(false); }
@@ -1108,8 +1304,76 @@
       }
     }
 
-    // M key toggles the Music panel open/close
+    // Enhanced keyboard navigation
     window.addEventListener('keydown', function(e){
+      // ESC key handling - priority order: close focus mode first, then videos, then modals, then return to main screen
+      if (e.key === 'Escape') {
+        // First check if focus mode is active
+        if (focusActive) {
+          exitFocusMode();
+          return;
+        }
+        
+        // Then check if any videos are playing
+        var videoOverlay = document.getElementById('videoOverlay');
+        var ambientVideo = document.getElementById('ambientVideo');
+        var anyVideosPlaying = false;
+        
+        if (videoOverlay && videoOverlay.classList.contains('show')) {
+          anyVideosPlaying = true;
+        }
+        if (ambientVideo && ambientVideo.style.display === 'block') {
+          anyVideosPlaying = true;
+        }
+        
+        if (anyVideosPlaying) {
+          // Close all overlay videos
+          var config = [
+            { id: 'vid-bln' }, { id: 'vid-grn' }, { id: 'lucky-video' }, 
+            { id: 'vid-red' }, { id: 'vid-pme' }
+          ];
+          config.forEach(function(item){ 
+            var v = document.getElementById(item.id); 
+            if (!v) return; 
+            try { v.pause(); } catch(err){} 
+            v.style.display = 'none'; 
+            v.muted = true; 
+          });
+          
+          // Close ambient video (output.webm)
+          if (ambientVideo) {
+            try { ambientVideo.pause(); } catch(err){}
+            ambientVideo.style.display = 'none';
+          }
+          
+          if (videoOverlay) { 
+            videoOverlay.classList.remove('show'); 
+            videoOverlay.setAttribute('aria-hidden','true'); 
+          }
+          return;
+        }
+        
+        // Then check if any modals are open
+        var panelBackdrop = document.getElementById('panelBackdrop');
+        var autoBackdrop = document.getElementById('autoTraderBackdrop');
+        
+        if (panelBackdrop && panelBackdrop.classList.contains('show')) {
+          closePanel();
+          return;
+        }
+        if (autoBackdrop && autoBackdrop.classList.contains('show')) {
+          closeAutoTraderPanel();
+          return;
+        }
+        
+        // If no modals are open and we're in welcome state, return to main screen
+        if (welcomeRevealed) {
+          returnToMainScreen();
+          return;
+        }
+      }
+      
+      // M key toggles the Music panel open/close
       if (e.key === 'm' || e.key === 'M') {
         var backdrop = document.getElementById('panelBackdrop');
         var titleEl = document.getElementById('panelTitle');
@@ -1119,9 +1383,53 @@
           openMusicPanel();
         }
       }
+      
+      // Space/Enter on focused hex cells
+      if (e.key === ' ' || e.key === 'Enter') {
+        var focused = document.activeElement;
+        if (focused && focused.classList.contains('hex-cell')) {
+          e.preventDefault();
+          focused.click();
+        }
+      }
+      
+      // Arrow key navigation for hex cells
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        var focused = document.activeElement;
+        if (focused && focused.classList.contains('hex-cell')) {
+          e.preventDefault();
+          navigateHexGrid(focused, e.key);
+        }
+      }
     });
+    
+    // Hex grid navigation helper
+    function navigateHexGrid(currentElement, direction) {
+      var allCells = Array.from(document.querySelectorAll('.hex-cell'));
+      var currentIndex = allCells.indexOf(currentElement);
+      var targetIndex = currentIndex;
+      
+      switch(direction) {
+        case 'ArrowUp':
+          targetIndex = Math.max(0, currentIndex - 7); // Approximate row navigation
+          break;
+        case 'ArrowDown':
+          targetIndex = Math.min(allCells.length - 1, currentIndex + 7);
+          break;
+        case 'ArrowLeft':
+          targetIndex = Math.max(0, currentIndex - 1);
+          break;
+        case 'ArrowRight':
+          targetIndex = Math.min(allCells.length - 1, currentIndex + 1);
+          break;
+      }
+      
+      if (targetIndex !== currentIndex && allCells[targetIndex]) {
+        allCells[targetIndex].focus();
+      }
+    }
 
-    // Multiple video controls: each button toggles its video; only last clicked has audio
+    // Video controls - simplified without popout functionality
     (function(){
       var overlay = document.getElementById('videoOverlay');
       var config = [
@@ -1178,32 +1486,66 @@
           });
         }
       });
-      // Clicking any visible overlay video enters focus preview mode
+      
+      // Add click handlers to videos for focus mode
       config.forEach(function(item){
         var v = document.getElementById(item.id);
         if (!v) return;
         v.addEventListener('click', function(){ enterFocusMode(item.id); });
       });
-      // ESC closes all
-      window.addEventListener('keydown', function(e){ if (e.key === 'Escape') {
-        if (focusActive) { exitFocusMode(); return; }
-        config.forEach(function(item){ var v = document.getElementById(item.id); if (!v) return; try { v.pause(); } catch(err){} v.style.display = 'none'; v.muted = true; });
-        if (overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
-      }});
+      // ESC handling is now managed by the main keyboard handler
+      // But we also need to handle ambient video in the video controls
+      function closeAllVideos() {
+        config.forEach(function(item){ 
+          var v = document.getElementById(item.id); 
+          if (!v) return; 
+          try { v.pause(); } catch(err){} 
+          v.style.display = 'none'; 
+          v.muted = true; 
+        });
+        
+        // Also close ambient video
+        var ambientVideo = document.getElementById('ambientVideo');
+        if (ambientVideo) {
+          try { ambientVideo.pause(); } catch(err){}
+          ambientVideo.style.display = 'none';
+        }
+        
+        if (overlay) { 
+          overlay.classList.remove('show'); 
+          overlay.setAttribute('aria-hidden','true'); 
+        }
+      }
     })();
 
-    // Focus preview logic
+    // Focus preview logic - click on videos to enter focus mode
     var focusActive = false;
     var prevOverlayState = { visibleIds: [] };
     function enterFocusMode(targetId) {
       if (focusActive) return;
       focusActive = true;
+      
+      // Store current state of visible videos
       var overlay = document.getElementById('videoOverlay');
       var ids = ['vid-bln','vid-grn','lucky-video','vid-red','vid-pme'];
-      prevOverlayState.visibleIds = ids.filter(function(id){ var v = document.getElementById(id); return v && v.style.display === 'block'; });
-      // Hide and pause all overlay videos
-      ids.forEach(function(id){ var v = document.getElementById(id); if (!v) return; try { v.pause(); } catch(e){} v.style.display = 'none'; });
-      if (overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+      prevOverlayState.visibleIds = ids.filter(function(id){ 
+        var v = document.getElementById(id); 
+        return v && v.style.display === 'block'; 
+      });
+      
+      // Hide and pause all overlay videos to prevent overlap
+      ids.forEach(function(id){ 
+        var v = document.getElementById(id); 
+        if (!v) return; 
+        try { v.pause(); } catch(e){} 
+        v.style.display = 'none'; 
+      });
+      
+      if (overlay) { 
+        overlay.classList.remove('show'); 
+        overlay.setAttribute('aria-hidden','true'); 
+      }
+      
       // Determine source from clicked video element
       var clicked = document.getElementById(targetId);
       var src = '';
@@ -1211,6 +1553,7 @@
         var s = clicked.querySelector('source');
         src = s ? s.getAttribute('src') : (clicked.currentSrc || clicked.src || '');
       }
+      
       var f = document.getElementById('focusVideo');
       if (f) {
         try { f.pause(); } catch(_e){}
@@ -1220,25 +1563,43 @@
         f.muted = false;
         try { f.play(); } catch(_e){}
       }
+      
       var layer = document.getElementById('focusOverlay');
-      if (layer) { layer.classList.add('show'); layer.setAttribute('aria-hidden','false'); }
+      if (layer) { 
+        layer.classList.add('show'); 
+        layer.setAttribute('aria-hidden','false'); 
+      }
     }
+    
     function exitFocusMode() {
       if (!focusActive) return;
       focusActive = false;
+      
       var f = document.getElementById('focusVideo');
-      if (f) { try { f.pause(); } catch(_e){} f.src=''; }
+      if (f) { 
+        try { f.pause(); } catch(_e){} 
+        f.src=''; 
+      }
+      
       var layer = document.getElementById('focusOverlay');
-      if (layer) { layer.classList.remove('show'); layer.setAttribute('aria-hidden','true'); }
+      if (layer) { 
+        layer.classList.remove('show'); 
+        layer.setAttribute('aria-hidden','true'); 
+      }
+      
       // Restore previously visible overlay videos
       var overlay = document.getElementById('videoOverlay');
       if (overlay && prevOverlayState.visibleIds && prevOverlayState.visibleIds.length) {
         overlay.classList.add('show');
         overlay.setAttribute('aria-hidden','false');
       }
+      
       (prevOverlayState.visibleIds || []).forEach(function(id){
         var v = document.getElementById(id);
-        if (v) { v.style.display = 'block'; try { v.play(); } catch(_e){} }
+        if (v) { 
+          v.style.display = 'block'; 
+          try { v.play(); } catch(_e){} 
+        }
       });
       prevOverlayState.visibleIds = [];
     }
@@ -1317,6 +1678,21 @@
         el.style.zIndex = '6';
       });
     }
+    
+    // Register Service Worker for PWA functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('HempHive: ServiceWorker registration successful');
+          })
+          .catch(function(err) {
+            console.log('HempHive: ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+    
+    // Initialize page - loading indicator removed as requested
   </script>
 
 </body>
