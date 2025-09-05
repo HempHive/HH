@@ -156,7 +156,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 2;
+      z-index: 10; /* Above the video buttons */
     }
     #honeycombSvg {
       position: absolute;
@@ -243,13 +243,19 @@
     body.show-bars .widebar.top { transform: translateY(0); opacity: 1; }
     body.show-bars .widebar.bottom { transform: translateY(0); opacity: 1; }
 
-    /* Music cell playing state - Purple theme */
+    /* Music cell playing state - Internal purple glow */
     .hex-cell.music.playing polygon {
       stroke: #9c27b0; /* Purple stroke */
-      stroke-width: 2;
-      fill: #e1bee7; /* Light purple fill */
-      fill-opacity: 0.3;
-      filter: drop-shadow(0 0 12px rgba(156, 39, 176, 0.75)) drop-shadow(0 0 22px rgba(156, 39, 176, 0.5));
+      stroke-width: 3;
+      fill: #9c27b0; /* Purple fill for internal glow */
+      fill-opacity: 0.3; /* Semi-transparent purple fill */
+      filter: none; /* Remove external shadows */
+    }
+    
+    /* Internal glow effect for the entire hex cell */
+    .hex-cell.music.playing {
+      filter: none; /* Remove external shadows */
+      background: radial-gradient(circle at center, rgba(156, 39, 176, 0.2), transparent 70%);
     }
 
     .hex-button {
@@ -596,19 +602,19 @@
   <div class="widebar bottom"><div class="content"></div></div>
 
   <!-- Control Buttons (revealed post-Welcome) -->
-  <button id="aButton" class="hex-button circle-btn" aria-label="Play central video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:140px;height:121px;">
+  <button id="aButton" class="hex-button circle-btn" aria-label="Play central video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
     <span class="label"></span>
   </button>
-  <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">🔵</span>
   </button>
-  <button id="btn-grn" class="hex-button circle-btn" aria-label="Play green video" style="left:35%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-grn" class="hex-button circle-btn" aria-label="Play green video" style="left:35%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">🟢</span>
   </button>
-  <button id="btn-red" class="hex-button circle-btn" aria-label="Play red video" style="left:65%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-red" class="hex-button circle-btn" aria-label="Play red video" style="left:65%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">🔴</span>
   </button>
-  <button id="btn-pme" class="hex-button circle-btn" aria-label="Play purple video" style="left:80%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:6;display:none;width:120px;height:104px;">
+  <button id="btn-pme" class="hex-button circle-btn" aria-label="Play purple video" style="left:80%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">🟣</span>
   </button>
 
@@ -1144,12 +1150,13 @@
     audio.crossOrigin = 'anonymous';
 
     function openMusicPanel() {
+      console.log('Opening music panel...');
       var backdrop = document.getElementById('panelBackdrop');
       var titleEl = document.getElementById('panelTitle');
       var contentEl = document.getElementById('panelContent');
       titleEl.textContent = 'Music';
       contentEl.innerHTML = '<div id="nowPlaying" style="margin-bottom:10px;color:#ffda4d;">Not playing</div>'+
-        '<div id="stations" style="max-height:40vh;overflow:auto;margin-bottom:12px;"></div>'+
+        '<div id="stations" style="max-height:40vh;overflow:auto;margin-bottom:12px;">Loading stations...</div>'+
         '<div style="display:flex;gap:10px;justify-content:center;">'+
         '<button id="btnPrev" class="ui-btn">⏮ Prev</button>'+ 
         '<button id="btnPlay" class="ui-btn">▶️ Play</button>'+ 
@@ -1158,36 +1165,77 @@
         '<style>.ui-btn{background:#151515;border:1px solid #ffcc33;color:#ffda4d;padding:8px 14px;border-radius:8px;cursor:pointer;transition:filter 0.2s ease;} .ui-btn:hover{filter:brightness(1.2);} .station{padding:8px;border:1px solid rgba(255,204,51,0.25);margin:6px 0;border-radius:8px;cursor:pointer;background:rgba(255,204,51,0.04);} .station:hover{background:rgba(255,204,51,0.08);} .station.active{border-color:#ffd24d;background:rgba(255,230,120,0.12);box-shadow:0 0 0 2px rgba(255,220,120,0.08) inset;}</style>';
       backdrop.classList.add('show');
       backdrop.setAttribute('aria-hidden','false');
-      if (!radioList.length) { fetchStations(); } else { renderStations(); }
+      
+      console.log('Radio list length:', radioList.length);
+      if (!radioList.length) { 
+        console.log('Fetching stations...');
+        fetchStations(); 
+      } else { 
+        console.log('Rendering existing stations...');
+        renderStations(); 
+      }
+      
       document.getElementById('btnPrev').onclick = function(){ changeStation(-1); };
       document.getElementById('btnPlay').onclick = function(){ toggleMusic(); };
       document.getElementById('btnNext').onclick = function(){ changeStation(1); };
     }
 
     function fetchStations() {
-      // Try absolute path first to avoid SPA fallbacks returning index.html
-      fetch('/radio.txt', { cache: 'no-cache' }).then(function(r){
-        if (!r.ok) throw new Error('not ok');
-        return r.text();
-      }).catch(function(){
-        return fetch('radio.txt', { cache: 'no-cache' }).then(function(r){ return r.text(); });
-      }).then(function(text){
-        // Guard: some servers return index.html when file missing
-        var header = text.slice(0, 32).toLowerCase();
-        if (header.includes('<!doctype') || header.includes('<html')) {
-          console.warn('radio.txt fetch returned HTML; check path.');
-          radioList = [];
+      console.log('Fetching radio stations...');
+      // Try multiple paths to find radio.txt
+      var paths = ['radio.txt', './radio.txt', '/radio.txt'];
+      var currentPathIndex = 0;
+      
+      function tryNextPath() {
+        if (currentPathIndex >= paths.length) {
+          console.error('Failed to load radio.txt from any path, using fallback stations');
+          // Fallback stations in case radio.txt can't be loaded
+          radioList = [
+            { name: 'House FM', url: 'https://streaming.broadcast.radio/housefm' },
+            { name: 'BIGfm House', url: 'https://stream.bigfm.de/deeptechhouse/mp3-128/' },
+            { name: 'Reggae Dancehall', url: 'https://stream.bigfm.de/dancehall/mp3-128/' },
+            { name: 'Techno Lovers', url: 'https://stream.technolovers.fm/vocal-trance' },
+            { name: 'Electro FM', url: 'https://electro-fm.stream.laut.fm/electro-fm' }
+          ];
+          console.log('Using fallback stations:', radioList.length);
+          if (currentIdx === -1 && radioList.length) currentIdx = 0;
           renderStations();
           return;
         }
-        radioList = parseStations(text);
-        if (currentIdx === -1 && radioList.length) currentIdx = 0;
-        renderStations();
-      }).catch(function(err){
-        console.error('Failed to load radio.txt', err);
-        radioList = [];
-        renderStations();
-      });
+        
+        var path = paths[currentPathIndex];
+        console.log('Trying path:', path);
+        
+        fetch(path, { 
+          cache: 'no-cache',
+          mode: 'cors'
+        }).then(function(r){
+          console.log('Response status:', r.status, 'for path:', path);
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.text();
+        }).then(function(text){
+          console.log('Received text length:', text.length);
+          // Guard: some servers return index.html when file missing
+          var header = text.slice(0, 32).toLowerCase();
+          if (header.includes('<!doctype') || header.includes('<html')) {
+            console.warn('radio.txt fetch returned HTML; trying next path.');
+            currentPathIndex++;
+            tryNextPath();
+            return;
+          }
+          console.log('Successfully loaded radio.txt from:', path);
+          radioList = parseStations(text);
+          console.log('Parsed stations:', radioList.length);
+          if (currentIdx === -1 && radioList.length) currentIdx = 0;
+          renderStations();
+        }).catch(function(err){
+          console.warn('Failed to load from', path, ':', err.message);
+          currentPathIndex++;
+          tryNextPath();
+        });
+      }
+      
+      tryNextPath();
     }
 
     function parseStations(text) {
@@ -1223,9 +1271,19 @@
     }
 
     function renderStations() {
+      console.log('Rendering stations, count:', radioList.length);
       var container = document.getElementById('stations');
-      if (!container) return;
+      if (!container) {
+        console.error('Stations container not found!');
+        return;
+      }
       container.innerHTML = '';
+      
+      if (radioList.length === 0) {
+        container.innerHTML = '<div style="color:#ffda4d;text-align:center;padding:20px;">No stations loaded. Check console for errors.</div>';
+        return;
+      }
+      
       radioList.forEach(function(st, idx){
         var div = document.createElement('div');
         div.className = 'station'+(idx===currentIdx?' active':'');
