@@ -588,10 +588,10 @@
   <div class="widebar bottom"><div class="content"></div></div>
 
   <!-- Control Buttons (revealed post-Welcome) -->
-  <button id="wButton" class="hex-button circle-btn" aria-label="Toggle Welcome state" style="left:10%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
+  <button id="wButton" class="hex-button circle-btn" aria-label="Toggle Welcome state" onclick="handleWButtonClick()" style="left:10%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">W</span>
   </button>
-  <button id="aButton" class="hex-button circle-btn" aria-label="Toggle AutoTrader" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
+  <button id="aButton" class="hex-button circle-btn" aria-label="Toggle AutoTrader" onclick="handleAButtonClick()" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
     <span class="label">A</span>
   </button>
   <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
@@ -676,36 +676,10 @@
     // Background image metrics for positioning media relative to the hero
     var bgMetrics = { ready: false, left: 0, top: 0, width: 0, height: 0, aspect: 16/9 };
     
-    // Error handling and loading states
-    var loadingStates = {
-      images: new Set(),
-      videos: new Set(),
-      audio: new Set()
-    };
-    
     // Global error handler
     window.addEventListener('error', function(e) {
-      console.warn('HempHive: Resource loading error:', e.message);
-      // Could add user notification here
+      // Silent error handling
     });
-    
-    // Loading indicator
-    function showLoadingIndicator(message) {
-      var indicator = document.getElementById('loadingIndicator');
-      if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'loadingIndicator';
-        indicator.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.8);color:#ffcc33;padding:10px;border-radius:5px;z-index:10000;font-size:14px;';
-        document.body.appendChild(indicator);
-      }
-      indicator.textContent = message;
-      indicator.style.display = 'block';
-    }
-    
-    function hideLoadingIndicator() {
-      var indicator = document.getElementById('loadingIndicator');
-      if (indicator) indicator.style.display = 'none';
-    }
     // Layout config for overlay videos and buttons (tweak here for trial-and-error)
     var mediaLayout = window.mediaLayout || {
       sizeMultiplierVideos: 2,
@@ -1033,11 +1007,7 @@
           if (b) b.style.display = 'inline-flex';
         });
         
-        // Setup buttons after they're revealed with a small delay
-        setTimeout(function(){
-          setupAButton();
-          setupWButton();
-        }, 100);
+        // Buttons are now handled with inline onclick
         
         // start inactivity tracker for circle buttons once revealed
         try { startButtonsInactivityTracker(); } catch(_e){}
@@ -1147,7 +1117,7 @@
       var contentEl = document.getElementById('panelContent');
       titleEl.textContent = 'Music';
       contentEl.innerHTML = '<div id="nowPlaying" style="margin-bottom:10px;color:#ffda4d;">Not playing</div>'+
-        '<div id="stations" style="max-height:40vh;overflow:auto;margin-bottom:12px;">Loading stations...</div>'+
+        '<div id="stations" style="max-height:40vh;overflow:auto;margin-bottom:12px;">Stations</div>'+
         '<div style="display:flex;gap:10px;justify-content:center;">'+
         '<button id="btnPrev" class="ui-btn">⏮ Prev</button>'+ 
         '<button id="btnPlay" class="ui-btn">▶️ Play</button>'+ 
@@ -1301,7 +1271,6 @@
 
     function playCurrent() {
       if (currentIdx < 0 || !radioList[currentIdx]) return;
-      showLoadingIndicator('Loading music...');
       try { audio.pause(); } catch(e){}
       audio.src = '';
       audio.load();
@@ -1309,21 +1278,12 @@
       
       // Add error handling for audio
       audio.addEventListener('error', function() {
-        console.warn('Audio loading failed:', radioList[currentIdx].name);
-        hideLoadingIndicator();
         setMusicPlaying(false);
-      });
-      
-      audio.addEventListener('canplay', function() {
-        hideLoadingIndicator();
       });
       
       audio.play().then(function(){ 
         setMusicPlaying(true); 
-        hideLoadingIndicator();
       }).catch(function(err){ 
-        console.warn('Play failed', err); 
-        hideLoadingIndicator();
         setMusicPlaying(false);
       });
       updateNowPlaying();
@@ -1355,6 +1315,20 @@
 
     // Enhanced keyboard navigation
     window.addEventListener('keydown', function(e){
+      // A key - AutoTrader toggle
+      if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        handleAButtonClick();
+        return;
+      }
+      
+      // W key - Welcome state toggle
+      if (e.key === 'w' || e.key === 'W') {
+        e.preventDefault();
+        handleWButtonClick();
+        return;
+      }
+      
       // ESC key handling - priority order: close focus mode first, then videos, then modals, then return to main screen
       if (e.key === 'Escape') {
         // First check if focus mode is active
@@ -1527,36 +1501,21 @@
         v.addEventListener('click', function(){ enterFocusMode(item.id); });
       });
       
-      // A button setup function - AutoTrader toggle only
-      function setupAButton() {
-        var aButton = document.getElementById('aButton');
-        if (aButton) {
-          aButton.onclick = function(e){
-            e.preventDefault();
-            e.stopPropagation();
-            var autoBackdrop = document.getElementById('autoTraderBackdrop');
-            if (autoBackdrop && autoBackdrop.classList.contains('show')) {
-              closeAutoTraderPanel();
-            } else {
-              openAutoTraderPanel();
-            }
-          };
+      // Direct button event handlers
+      function handleAButtonClick() {
+        var autoBackdrop = document.getElementById('autoTraderBackdrop');
+        if (autoBackdrop && autoBackdrop.classList.contains('show')) {
+          closeAutoTraderPanel();
+        } else {
+          openAutoTraderPanel();
         }
       }
       
-      // W button setup function - Welcome state toggle
-      function setupWButton() {
-        var wButton = document.getElementById('wButton');
-        if (wButton) {
-          wButton.onclick = function(e){
-            e.preventDefault();
-            e.stopPropagation();
-            if (welcomeRevealed) {
-              returnToMainScreen();
-            } else {
-              triggerWelcomeReveal();
-            }
-          };
+      function handleWButtonClick() {
+        if (welcomeRevealed) {
+          returnToMainScreen();
+        } else {
+          triggerWelcomeReveal();
         }
       }
       // ESC handling is now managed by the main keyboard handler
@@ -1759,12 +1718,6 @@
     }
     
     // Initialize page - loading indicator removed as requested
-    
-    // Setup buttons immediately in case they're clicked before Welcome state
-    document.addEventListener('DOMContentLoaded', function(){
-      setupAButton();
-      setupWButton();
-    });
   </script>
 
 </body>
