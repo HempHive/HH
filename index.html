@@ -594,6 +594,9 @@
   <button id="aButton" class="hex-button circle-btn" aria-label="Play marissa video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
     <span class="label">A</span>
   </button>
+  <button id="oButton" class="hex-button circle-btn" aria-label="Play ambient video" style="left:65%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
+    <span class="label">O</span>
+  </button>
   <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">🔵</span>
   </button>
@@ -1006,7 +1009,7 @@
       setTimeout(function(){
         try { svg.style.filter = 'blur(1px)'; } catch(e){}
         // Reveal control buttons
-        ;['wButton','aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
+        ;['wButton','aButton','oButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
           var b = document.getElementById(id);
           if (b) b.style.display = 'inline-flex';
         });
@@ -1051,7 +1054,7 @@
       setTimeout(function(){
         try { svg.style.filter = 'none'; } catch(e){}
         // Hide control buttons immediately when returning to main screen
-        ;['wButton','aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
+        ;['wButton','aButton','oButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
           var b = document.getElementById(id);
           if (b) b.style.display = 'none';
         });
@@ -1376,6 +1379,17 @@
         return;
       }
       
+      // O key - Ambient video toggle
+      if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        // Use the video control system
+        var oButton = document.getElementById('oButton');
+        if (oButton) {
+          oButton.click();
+        }
+        return;
+      }
+      
       
       // M key - Music panel toggle (restore original working code)
       if (e.key === 'm' || e.key === 'M') {
@@ -1522,7 +1536,8 @@
         { id: 'vid-grn', btn: 'btn-grn' },
         { id: 'vid-red', btn: 'btn-red' },
         { id: 'vid-pme', btn: 'btn-pme' },
-        { id: 'lucky-video', btn: 'aButton' }
+        { id: 'lucky-video', btn: 'aButton' },
+        { id: 'ambientVideo', btn: 'oButton' }
       ];
       function toggleVideo(targetId) {
         if (!welcomeRevealed) return;
