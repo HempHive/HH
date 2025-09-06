@@ -1033,9 +1033,11 @@
           if (b) b.style.display = 'inline-flex';
         });
         
-        // Setup buttons after they're revealed
-        setupAButton();
-        setupWButton();
+        // Setup buttons after they're revealed with a small delay
+        setTimeout(function(){
+          setupAButton();
+          setupWButton();
+        }, 100);
         
         // start inactivity tracker for circle buttons once revealed
         try { startButtonsInactivityTracker(); } catch(_e){}
@@ -1527,50 +1529,34 @@
       
       // A button setup function - AutoTrader toggle only
       function setupAButton() {
-        console.log('Setting up A button...');
         var aButton = document.getElementById('aButton');
-        console.log('A button found:', aButton);
         if (aButton) {
-          console.log('Adding click listener to A button');
           aButton.onclick = function(e){
             e.preventDefault();
             e.stopPropagation();
-            console.log('A button clicked!');
             var autoBackdrop = document.getElementById('autoTraderBackdrop');
             if (autoBackdrop && autoBackdrop.classList.contains('show')) {
-              console.log('Closing AutoTrader');
               closeAutoTraderPanel();
             } else {
-              console.log('Opening AutoTrader');
               openAutoTraderPanel();
             }
           };
-        } else {
-          console.error('A button not found!');
         }
       }
       
       // W button setup function - Welcome state toggle
       function setupWButton() {
-        console.log('Setting up W button...');
         var wButton = document.getElementById('wButton');
-        console.log('W button found:', wButton);
         if (wButton) {
-          console.log('Adding click listener to W button');
           wButton.onclick = function(e){
             e.preventDefault();
             e.stopPropagation();
-            console.log('W button clicked!');
             if (welcomeRevealed) {
-              console.log('Returning to main screen');
               returnToMainScreen();
             } else {
-              console.log('Triggering welcome reveal');
               triggerWelcomeReveal();
             }
           };
-        } else {
-          console.error('W button not found!');
         }
       }
       // ESC handling is now managed by the main keyboard handler
@@ -1774,12 +1760,11 @@
     
     // Initialize page - loading indicator removed as requested
     
-    // Test button setup immediately
-    setTimeout(function(){
-      console.log('Testing button setup...');
+    // Setup buttons immediately in case they're clicked before Welcome state
+    document.addEventListener('DOMContentLoaded', function(){
       setupAButton();
       setupWButton();
-    }, 1000);
+    });
   </script>
 
 </body>
