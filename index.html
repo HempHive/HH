@@ -1313,10 +1313,32 @@
       }
     }
 
+    // Global button event handlers
+    function handleAButtonClick() {
+      var autoBackdrop = document.getElementById('autoTraderBackdrop');
+      if (autoBackdrop && autoBackdrop.classList.contains('show')) {
+        closeAutoTraderPanel();
+      } else {
+        openAutoTraderPanel();
+      }
+    }
+    
+    function handleWButtonClick() {
+      if (welcomeRevealed) {
+        returnToMainScreen();
+      } else {
+        triggerWelcomeReveal();
+      }
+    }
+
     // Enhanced keyboard navigation
     window.addEventListener('keydown', function(e){
+      // Debug: log all key presses
+      console.log('Key pressed:', e.key);
+      
       // A key - AutoTrader toggle
       if (e.key === 'a' || e.key === 'A') {
+        console.log('A key detected!');
         e.preventDefault();
         handleAButtonClick();
         return;
@@ -1324,6 +1346,7 @@
       
       // W key - Welcome state toggle
       if (e.key === 'w' || e.key === 'W') {
+        console.log('W key detected!');
         e.preventDefault();
         handleWButtonClick();
         return;
@@ -1501,23 +1524,7 @@
         v.addEventListener('click', function(){ enterFocusMode(item.id); });
       });
       
-      // Direct button event handlers
-      function handleAButtonClick() {
-        var autoBackdrop = document.getElementById('autoTraderBackdrop');
-        if (autoBackdrop && autoBackdrop.classList.contains('show')) {
-          closeAutoTraderPanel();
-        } else {
-          openAutoTraderPanel();
-        }
-      }
-      
-      function handleWButtonClick() {
-        if (welcomeRevealed) {
-          returnToMainScreen();
-        } else {
-          triggerWelcomeReveal();
-        }
-      }
+      // Direct button event handlers - moved to global scope
       // ESC handling is now managed by the main keyboard handler
       // But we also need to handle ambient video in the video controls
       function closeAllVideos() {
