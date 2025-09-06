@@ -591,7 +591,7 @@
   <button id="wButton" class="hex-button circle-btn" aria-label="Toggle Welcome state" onclick="handleWButtonClick()" style="left:10%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">W</span>
   </button>
-  <button id="aButton" class="hex-button circle-btn" aria-label="Toggle AutoTrader" onclick="handleAButtonClick()" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
+  <button id="aButton" class="hex-button circle-btn" aria-label="Play marissa video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
     <span class="label">A</span>
   </button>
   <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
@@ -894,8 +894,12 @@
             labelToGroup[name] = gr;
           });
 
-          // Center mapping
-          center.addEventListener('click', function(){ openPanel('Welcome'); });
+          // Center mapping - open Welcome panel
+          center.addEventListener('click', function(e){ 
+            e.preventDefault();
+            e.stopPropagation();
+            openPanel('Welcome');
+          });
           center.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); openPanel('Welcome'); }});
           var ct = center.querySelector('text'); if (ct) { ct.textContent = 'Welcome'; }
 
@@ -1013,7 +1017,7 @@
         if (topBar) topBar.style.display = 'block';
         if (bottomBar) bottomBar.style.display = 'block';
         
-        // Buttons are now handled with inline onclick
+        // aButton is now handled by the video control system
         
         // start inactivity tracker for circle buttons once revealed
         try { startButtonsInactivityTracker(); } catch(_e){}
@@ -1326,8 +1330,10 @@
       }
     }
 
-    // Global button event handlers
-    function handleAButtonClick() {
+    // aButton is now handled by the video control system
+    
+    // Function to toggle AutoTrader panel
+    function toggleAutoTraderPanel() {
       var autoBackdrop = document.getElementById('autoTraderBackdrop');
       if (autoBackdrop && autoBackdrop.classList.contains('show')) {
         closeAutoTraderPanel();
@@ -1346,10 +1352,13 @@
 
     // Restore the original working keyboard handler and add A/W keys
     window.addEventListener('keydown', function(e){
-      // A key - AutoTrader toggle
+      // Only handle actual keyboard events, not click events
+      if (e.type !== 'keydown') return;
+      
+      // A key - AutoTrader panel toggle
       if (e.key === 'a' || e.key === 'A') {
         e.preventDefault();
-        handleAButtonClick();
+        toggleAutoTraderPanel();
         return;
       }
       
@@ -1359,6 +1368,14 @@
         handleWButtonClick();
         return;
       }
+      
+      // T key - AutoTrader panel toggle
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        toggleAutoTraderPanel();
+        return;
+      }
+      
       
       // M key - Music panel toggle (restore original working code)
       if (e.key === 'm' || e.key === 'M') {
@@ -1504,32 +1521,46 @@
         { id: 'vid-bln', btn: 'btn-bln' },
         { id: 'vid-grn', btn: 'btn-grn' },
         { id: 'vid-red', btn: 'btn-red' },
-        { id: 'vid-pme', btn: 'btn-pme' }
+        { id: 'vid-pme', btn: 'btn-pme' },
+        { id: 'lucky-video', btn: 'aButton' }
       ];
       function toggleVideo(targetId) {
         if (!welcomeRevealed) return;
         var v = document.getElementById(targetId);
         if (!v) return;
         var turningOn = v.style.display !== 'block';
-        if (turningOn) {
-          if (overlay) { overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
-          // Show and play this one
-          v.style.display = 'block';
-          try { v.play(); } catch(e){}
-          try { v.muted = false; v.volume = 1.0; } catch(e){}
-          // Keep others visible if they are already on, but mute them
-          config.forEach(function(item){
-            var o = document.getElementById(item.id);
-            if (!o || o === v) return;
-            o.muted = true;
-            if (o.style.display === 'block') { try { o.play(); } catch(_e){} }
-          });
+        
+        if (targetId === 'ambientVideo') {
+          // Special handling for ambient video - no overlay needed
+          if (turningOn) {
+            v.style.display = 'block';
+            try { v.play(); } catch(e){}
+          } else {
+            try { v.pause(); } catch(e){}
+            v.style.display = 'none';
+          }
         } else {
-          try { v.pause(); } catch(e){}
-          v.style.display = 'none';
-          // Keep overlay if any other video is still visible
-          var anyVisible = config.some(function(item){ var el = document.getElementById(item.id); return el && el.style.display === 'block'; });
-          if (!anyVisible && overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+          // Regular video handling
+          if (turningOn) {
+            if (overlay) { overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
+            // Show and play this one
+            v.style.display = 'block';
+            try { v.play(); } catch(e){}
+            try { v.muted = false; v.volume = 1.0; } catch(e){}
+            // Keep others visible if they are already on, but mute them
+            config.forEach(function(item){
+              var o = document.getElementById(item.id);
+              if (!o || o === v) return;
+              o.muted = true;
+              if (o.style.display === 'block') { try { o.play(); } catch(_e){} }
+            });
+          } else {
+            try { v.pause(); } catch(e){}
+            v.style.display = 'none';
+            // Keep overlay if any other video is still visible
+            var anyVisible = config.some(function(item){ var el = document.getElementById(item.id); return el && el.style.display === 'block'; });
+            if (!anyVisible && overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+          }
         }
       }
       // Wire buttons
