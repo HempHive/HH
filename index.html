@@ -538,21 +538,7 @@
       display: block;
       background: #111;
     }
-    .auto-fallback {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.6);
-      color: #ffda4d;
-      border: 1px solid #ffcc33;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 14px;
-      text-align: center;
-      display: none;
-    }
-    .auto-fallback a { color: #ffda4d; text-decoration: underline; }
+    /* Auto-fallback removed as requested */
     .auto-close {
       position: absolute;
       top: 10px;
@@ -647,7 +633,6 @@
     <div class="auto-panel">
       <button id="autoClose" class="auto-close" aria-label="Close">✕</button>
       <iframe id="autoFrame" src="" title="AutoTrader" allow="fullscreen; autoplay; clipboard-read; clipboard-write" referrerpolicy="no-referrer"></iframe>
-      <div id="autoFallback" class="auto-fallback">If the site doesn't appear, <a href="https://hemphive.github.io/ATB2/" target="_blank" rel="noopener">open AutoTrader in a new tab</a>.</div>
     </div>
   </div>
 
@@ -1106,7 +1091,6 @@
     window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePanel(); });
 
     // AutoTrader controls
-    var autoLoadTimer = null;
     function openAutoTraderPanel() {
       // Ensure other overlays don't obscure
       var focus = document.getElementById('focusOverlay');
@@ -1115,16 +1099,10 @@
       if (stdPanel) { stdPanel.classList.remove('show'); stdPanel.setAttribute('aria-hidden','true'); }
       var backdrop = document.getElementById('autoTraderBackdrop');
       var frame = document.getElementById('autoFrame');
-      var fallback = document.getElementById('autoFallback');
-      if (fallback) { fallback.style.display = 'none'; }
       if (frame) {
         try { frame.removeAttribute('src'); } catch(_e){}
         // Set src every time in case of prior failures
         frame.src = 'https://hemphive.github.io/ATB2/';
-        var onLoad = function(){ if (fallback) fallback.style.display = 'none'; cleanup(); };
-        var cleanup = function(){ try { frame.removeEventListener('load', onLoad); } catch(_e){} if (autoLoadTimer) { clearTimeout(autoLoadTimer); autoLoadTimer = null; } };
-        try { frame.addEventListener('load', onLoad); } catch(_e){}
-        autoLoadTimer = setTimeout(function(){ if (fallback) fallback.style.display = 'block'; cleanup(); }, 2000);
       }
       backdrop.classList.add('show');
       backdrop.setAttribute('aria-hidden','false');
@@ -1133,7 +1111,6 @@
       var backdrop = document.getElementById('autoTraderBackdrop');
       backdrop.classList.remove('show');
       backdrop.setAttribute('aria-hidden','true');
-      if (autoLoadTimer) { clearTimeout(autoLoadTimer); autoLoadTimer = null; }
     }
     (function(){
       var ac = document.getElementById('autoClose');
@@ -1551,6 +1528,19 @@
         if (!v) return;
         v.addEventListener('click', function(){ enterFocusMode(item.id); });
       });
+      
+      // Add click handler to "A" button for AutoTrader toggle
+      var aButton = document.getElementById('aButton');
+      if (aButton) {
+        aButton.addEventListener('click', function(){
+          var autoBackdrop = document.getElementById('autoTraderBackdrop');
+          if (autoBackdrop && autoBackdrop.classList.contains('show')) {
+            closeAutoTraderPanel();
+          } else {
+            openAutoTraderPanel();
+          }
+        });
+      }
       // ESC handling is now managed by the main keyboard handler
       // But we also need to handle ambient video in the video controls
       function closeAllVideos() {
