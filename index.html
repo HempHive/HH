@@ -579,7 +579,7 @@
   </div>
 
   <!-- Honeycomb grid (SVG background + buttons perfectly aligned) -->
-  <div id="honeycomb" aria-label="HempHive navigation">
+  <div id="honeycomb" aria-label="HempHive navigation" tabindex="0" style="outline: none;">
     <svg id="honeycombSvg" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
     </div>
 
@@ -1776,6 +1776,63 @@
     console.log('Setting up keyboard test...');
     document.addEventListener('keydown', function(e) {
       console.log('TEST: Key pressed:', e.key);
+    });
+    
+    // Focus the honeycomb container so keyboard events work
+    document.addEventListener('DOMContentLoaded', function() {
+      var honeycomb = document.getElementById('honeycomb');
+      if (honeycomb) {
+        honeycomb.focus();
+        console.log('Honeycomb focused');
+      }
+    });
+    
+    // Also focus on click anywhere on the page
+    document.addEventListener('click', function() {
+      var honeycomb = document.getElementById('honeycomb');
+      if (honeycomb) {
+        honeycomb.focus();
+      }
+    });
+    
+    // Add direct keydown listener to honeycomb container
+    document.addEventListener('DOMContentLoaded', function() {
+      var honeycomb = document.getElementById('honeycomb');
+      if (honeycomb) {
+        honeycomb.addEventListener('keydown', function(e) {
+          console.log('Honeycomb keydown:', e.key);
+          
+          // A key - AutoTrader toggle
+          if (e.key === 'a' || e.key === 'A') {
+            console.log('A key detected on honeycomb!');
+            e.preventDefault();
+            handleAButtonClick();
+            return;
+          }
+          
+          // W key - Welcome state toggle
+          if (e.key === 'w' || e.key === 'W') {
+            console.log('W key detected on honeycomb!');
+            e.preventDefault();
+            handleWButtonClick();
+            return;
+          }
+          
+          // M key - Music panel toggle
+          if (e.key === 'm' || e.key === 'M') {
+            console.log('M key detected on honeycomb!');
+            e.preventDefault();
+            var backdrop = document.getElementById('panelBackdrop');
+            var titleEl = document.getElementById('panelTitle');
+            if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
+              closePanel();
+            } else {
+              openMusicPanel();
+            }
+            return;
+          }
+        });
+      }
     });
   </script>
 
