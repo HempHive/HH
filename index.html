@@ -1334,14 +1334,18 @@
     // Enhanced keyboard navigation - multiple listeners to ensure it works
     function handleKeyboard(e) {
       // Debug: log all key presses
-      console.log('Key pressed:', e.key);
+      console.log('Key pressed:', e.key, 'Target:', e.target);
       
       // A key - AutoTrader toggle
       if (e.key === 'a' || e.key === 'A') {
         console.log('A key detected!');
         e.preventDefault();
         e.stopPropagation();
-        handleAButtonClick();
+        try {
+          handleAButtonClick();
+        } catch(err) {
+          console.error('Error in handleAButtonClick:', err);
+        }
         return;
       }
       
@@ -1350,7 +1354,11 @@
         console.log('W key detected!');
         e.preventDefault();
         e.stopPropagation();
-        handleWButtonClick();
+        try {
+          handleWButtonClick();
+        } catch(err) {
+          console.error('Error in handleWButtonClick:', err);
+        }
         return;
       }
       
@@ -1359,12 +1367,19 @@
         console.log('M key detected!');
         e.preventDefault();
         e.stopPropagation();
-        var backdrop = document.getElementById('panelBackdrop');
-        var titleEl = document.getElementById('panelTitle');
-        if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
-          closePanel();
-        } else {
-          openMusicPanel();
+        try {
+          var backdrop = document.getElementById('panelBackdrop');
+          var titleEl = document.getElementById('panelTitle');
+          console.log('Backdrop:', backdrop, 'TitleEl:', titleEl);
+          if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
+            console.log('Closing Music panel');
+            closePanel();
+          } else {
+            console.log('Opening Music panel');
+            openMusicPanel();
+          }
+        } catch(err) {
+          console.error('Error in M key handler:', err);
         }
         return;
       }
@@ -1756,6 +1771,12 @@
     }
     
     // Initialize page - loading indicator removed as requested
+    
+    // Test keyboard immediately
+    console.log('Setting up keyboard test...');
+    document.addEventListener('keydown', function(e) {
+      console.log('TEST: Key pressed:', e.key);
+    });
   </script>
 
 </body>
