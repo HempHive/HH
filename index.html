@@ -1029,6 +1029,10 @@
           var b = document.getElementById(id);
           if (b) b.style.display = 'inline-flex';
         });
+        
+        // Setup A button after it's revealed
+        setupAButton();
+        
         // start inactivity tracker for circle buttons once revealed
         try { startButtonsInactivityTracker(); } catch(_e){}
       }, 1900);
@@ -1092,6 +1096,7 @@
 
     // AutoTrader controls
     function openAutoTraderPanel() {
+      console.log('Opening AutoTrader panel...');
       // Ensure other overlays don't obscure
       var focus = document.getElementById('focusOverlay');
       if (focus) { focus.classList.remove('show'); focus.setAttribute('aria-hidden','true'); }
@@ -1106,11 +1111,14 @@
       }
       backdrop.classList.add('show');
       backdrop.setAttribute('aria-hidden','false');
+      console.log('AutoTrader panel opened');
     }
     function closeAutoTraderPanel() {
+      console.log('Closing AutoTrader panel...');
       var backdrop = document.getElementById('autoTraderBackdrop');
       backdrop.classList.remove('show');
       backdrop.setAttribute('aria-hidden','true');
+      console.log('AutoTrader panel closed');
     }
     (function(){
       var ac = document.getElementById('autoClose');
@@ -1470,7 +1478,6 @@
       var config = [
         { id: 'vid-bln', btn: 'btn-bln' },
         { id: 'vid-grn', btn: 'btn-grn' },
-        { id: 'lucky-video', btn: 'aButton' },
         { id: 'vid-red', btn: 'btn-red' },
         { id: 'vid-pme', btn: 'btn-pme' }
       ];
@@ -1505,9 +1512,42 @@
         var btn = document.getElementById(item.btn);
         if (!btn) return;
         btn.addEventListener('click', function(){ toggleVideo(item.id); });
-        // Right-click on central button toggles ambient video
-        if (item.btn === 'aButton') {
-          btn.addEventListener('contextmenu', function(e){
+      });
+      
+      // Add click handlers to videos for focus mode
+      config.forEach(function(item){
+        var v = document.getElementById(item.id);
+        if (!v) return;
+        v.addEventListener('click', function(){ enterFocusMode(item.id); });
+      });
+      
+      // A button setup function
+      function setupAButton() {
+        console.log('Setting up A button...');
+        var aButton = document.getElementById('aButton');
+        console.log('A button found:', aButton);
+        
+        if (aButton) {
+          console.log('Adding click listener to A button');
+          aButton.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('A button clicked - toggling AutoTrader');
+            var autoBackdrop = document.getElementById('autoTraderBackdrop');
+            console.log('AutoTrader backdrop found:', autoBackdrop);
+            console.log('AutoTrader backdrop has show class:', autoBackdrop && autoBackdrop.classList.contains('show'));
+            
+            if (autoBackdrop && autoBackdrop.classList.contains('show')) {
+              console.log('Closing AutoTrader panel');
+              closeAutoTraderPanel();
+            } else {
+              console.log('Opening AutoTrader panel');
+              openAutoTraderPanel();
+            }
+          });
+          
+          // Right-click on "A" button toggles ambient video
+          aButton.addEventListener('contextmenu', function(e){
             e.preventDefault();
             var amb = document.getElementById('ambientVideo');
             if (!amb) return;
@@ -1519,27 +1559,9 @@
               amb.style.display = 'none';
             }
           });
+        } else {
+          console.error('A button not found during setup!');
         }
-      });
-      
-      // Add click handlers to videos for focus mode
-      config.forEach(function(item){
-        var v = document.getElementById(item.id);
-        if (!v) return;
-        v.addEventListener('click', function(){ enterFocusMode(item.id); });
-      });
-      
-      // Add click handler to "A" button for AutoTrader toggle
-      var aButton = document.getElementById('aButton');
-      if (aButton) {
-        aButton.addEventListener('click', function(){
-          var autoBackdrop = document.getElementById('autoTraderBackdrop');
-          if (autoBackdrop && autoBackdrop.classList.contains('show')) {
-            closeAutoTraderPanel();
-          } else {
-            openAutoTraderPanel();
-          }
-        });
       }
       // ESC handling is now managed by the main keyboard handler
       // But we also need to handle ambient video in the video controls
