@@ -1331,67 +1331,35 @@
       }
     }
 
-    // Enhanced keyboard navigation - multiple listeners to ensure it works
-    function handleKeyboard(e) {
-      // Debug: log all key presses
-      console.log('Key pressed:', e.key, 'Target:', e.target);
-      
+    // Restore the original working keyboard handler and add A/W keys
+    window.addEventListener('keydown', function(e){
       // A key - AutoTrader toggle
       if (e.key === 'a' || e.key === 'A') {
-        console.log('A key detected!');
         e.preventDefault();
-        e.stopPropagation();
-        try {
-          handleAButtonClick();
-        } catch(err) {
-          console.error('Error in handleAButtonClick:', err);
-        }
+        handleAButtonClick();
         return;
       }
       
       // W key - Welcome state toggle
       if (e.key === 'w' || e.key === 'W') {
-        console.log('W key detected!');
         e.preventDefault();
-        e.stopPropagation();
-        try {
-          handleWButtonClick();
-        } catch(err) {
-          console.error('Error in handleWButtonClick:', err);
+        handleWButtonClick();
+        return;
+      }
+      
+      // M key - Music panel toggle (restore original working code)
+      if (e.key === 'm' || e.key === 'M') {
+        var backdrop = document.getElementById('panelBackdrop');
+        var titleEl = document.getElementById('panelTitle');
+        if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
+          closePanel();
+        } else {
+          openMusicPanel();
         }
         return;
       }
       
-      // M key - Music panel toggle
-      if (e.key === 'm' || e.key === 'M') {
-        console.log('M key detected!');
-        e.preventDefault();
-        e.stopPropagation();
-        try {
-          var backdrop = document.getElementById('panelBackdrop');
-          var titleEl = document.getElementById('panelTitle');
-          console.log('Backdrop:', backdrop, 'TitleEl:', titleEl);
-          if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
-            console.log('Closing Music panel');
-            closePanel();
-          } else {
-            console.log('Opening Music panel');
-            openMusicPanel();
-          }
-        } catch(err) {
-          console.error('Error in M key handler:', err);
-        }
-        return;
-      }
-    }
-    
-    // Add multiple listeners to ensure keyboard works
-    document.addEventListener('keydown', handleKeyboard, true);
-    window.addEventListener('keydown', handleKeyboard, true);
-    document.body.addEventListener('keydown', handleKeyboard, true);
-    
-    // ESC key handling - priority order: close focus mode first, then videos, then modals, then return to main screen
-    function handleESC(e) {
+      // ESC key handling - priority order: close focus mode first, then videos, then modals, then return to main screen
       if (e.key === 'Escape') {
         // First check if focus mode is active
         if (focusActive) {
@@ -1457,16 +1425,19 @@
           return;
         }
       }
-    }
-    
-    // Add ESC listener
-    document.addEventListener('keydown', handleESC, true);
-    window.addEventListener('keydown', handleESC, true);
-    
-    // M key is now handled in the main handleKeyboard function
-    
-    // Space/Enter on focused hex cells
-    function handleSpaceEnter(e) {
+      
+      // M key toggles the Music panel open/close
+      if (e.key === 'm' || e.key === 'M') {
+        var backdrop = document.getElementById('panelBackdrop');
+        var titleEl = document.getElementById('panelTitle');
+        if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
+          closePanel();
+        } else {
+          openMusicPanel();
+        }
+      }
+      
+      // Space/Enter on focused hex cells
       if (e.key === ' ' || e.key === 'Enter') {
         var focused = document.activeElement;
         if (focused && focused.classList.contains('hex-cell')) {
@@ -1474,14 +1445,8 @@
           focused.click();
         }
       }
-    }
-    
-    // Add Space/Enter listener
-    document.addEventListener('keydown', handleSpaceEnter, true);
-    window.addEventListener('keydown', handleSpaceEnter, true);
-    
-    // Arrow key navigation for hex cells
-    function handleArrowKeys(e) {
+      
+      // Arrow key navigation for hex cells
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         var focused = document.activeElement;
         if (focused && focused.classList.contains('hex-cell')) {
@@ -1489,11 +1454,9 @@
           navigateHexGrid(focused, e.key);
         }
       }
-    }
+    });
     
-    // Add Arrow key listener
-    document.addEventListener('keydown', handleArrowKeys, true);
-    window.addEventListener('keydown', handleArrowKeys, true);
+    // All keyboard handling is now in the main window.addEventListener above
     
     // Hex grid navigation helper
     function navigateHexGrid(currentElement, direction) {
@@ -1795,45 +1758,7 @@
       }
     });
     
-    // Add direct keydown listener to honeycomb container
-    document.addEventListener('DOMContentLoaded', function() {
-      var honeycomb = document.getElementById('honeycomb');
-      if (honeycomb) {
-        honeycomb.addEventListener('keydown', function(e) {
-          console.log('Honeycomb keydown:', e.key);
-          
-          // A key - AutoTrader toggle
-          if (e.key === 'a' || e.key === 'A') {
-            console.log('A key detected on honeycomb!');
-            e.preventDefault();
-            handleAButtonClick();
-            return;
-          }
-          
-          // W key - Welcome state toggle
-          if (e.key === 'w' || e.key === 'W') {
-            console.log('W key detected on honeycomb!');
-            e.preventDefault();
-            handleWButtonClick();
-            return;
-          }
-          
-          // M key - Music panel toggle
-          if (e.key === 'm' || e.key === 'M') {
-            console.log('M key detected on honeycomb!');
-            e.preventDefault();
-            var backdrop = document.getElementById('panelBackdrop');
-            var titleEl = document.getElementById('panelTitle');
-            if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
-              closePanel();
-            } else {
-              openMusicPanel();
-            }
-            return;
-          }
-        });
-      }
-    });
+    // Keyboard handling is now in the main window.addEventListener above
   </script>
 
 </body>
