@@ -584,8 +584,8 @@
     </div>
 
   <!-- Widescreen bars -->
-  <div class="widebar top"><div class="content"></div></div>
-  <div class="widebar bottom"><div class="content"></div></div>
+  <div class="widebar top" style="pointer-events: none;"><div class="content"></div></div>
+  <div class="widebar bottom" style="pointer-events: none;"><div class="content"></div></div>
 
   <!-- Control Buttons (revealed post-Welcome) -->
   <button id="wButton" class="hex-button circle-btn" aria-label="Toggle Welcome state" onclick="handleWButtonClick()" style="left:10%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
@@ -1331,8 +1331,8 @@
       }
     }
 
-    // Enhanced keyboard navigation
-    window.addEventListener('keydown', function(e){
+    // Enhanced keyboard navigation - multiple listeners to ensure it works
+    function handleKeyboard(e) {
       // Debug: log all key presses
       console.log('Key pressed:', e.key);
       
@@ -1340,6 +1340,7 @@
       if (e.key === 'a' || e.key === 'A') {
         console.log('A key detected!');
         e.preventDefault();
+        e.stopPropagation();
         handleAButtonClick();
         return;
       }
@@ -1348,11 +1349,34 @@
       if (e.key === 'w' || e.key === 'W') {
         console.log('W key detected!');
         e.preventDefault();
+        e.stopPropagation();
         handleWButtonClick();
         return;
       }
       
-      // ESC key handling - priority order: close focus mode first, then videos, then modals, then return to main screen
+      // M key - Music panel toggle
+      if (e.key === 'm' || e.key === 'M') {
+        console.log('M key detected!');
+        e.preventDefault();
+        e.stopPropagation();
+        var backdrop = document.getElementById('panelBackdrop');
+        var titleEl = document.getElementById('panelTitle');
+        if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
+          closePanel();
+        } else {
+          openMusicPanel();
+        }
+        return;
+      }
+    }
+    
+    // Add multiple listeners to ensure keyboard works
+    document.addEventListener('keydown', handleKeyboard, true);
+    window.addEventListener('keydown', handleKeyboard, true);
+    document.body.addEventListener('keydown', handleKeyboard, true);
+    
+    // ESC key handling - priority order: close focus mode first, then videos, then modals, then return to main screen
+    function handleESC(e) {
       if (e.key === 'Escape') {
         // First check if focus mode is active
         if (focusActive) {
@@ -1418,19 +1442,16 @@
           return;
         }
       }
-      
-      // M key toggles the Music panel open/close
-      if (e.key === 'm' || e.key === 'M') {
-        var backdrop = document.getElementById('panelBackdrop');
-        var titleEl = document.getElementById('panelTitle');
-        if (backdrop && backdrop.classList.contains('show') && titleEl && titleEl.textContent === 'Music') {
-          closePanel();
-        } else {
-          openMusicPanel();
-        }
-      }
-      
-      // Space/Enter on focused hex cells
+    }
+    
+    // Add ESC listener
+    document.addEventListener('keydown', handleESC, true);
+    window.addEventListener('keydown', handleESC, true);
+    
+    // M key is now handled in the main handleKeyboard function
+    
+    // Space/Enter on focused hex cells
+    function handleSpaceEnter(e) {
       if (e.key === ' ' || e.key === 'Enter') {
         var focused = document.activeElement;
         if (focused && focused.classList.contains('hex-cell')) {
@@ -1438,8 +1459,14 @@
           focused.click();
         }
       }
-      
-      // Arrow key navigation for hex cells
+    }
+    
+    // Add Space/Enter listener
+    document.addEventListener('keydown', handleSpaceEnter, true);
+    window.addEventListener('keydown', handleSpaceEnter, true);
+    
+    // Arrow key navigation for hex cells
+    function handleArrowKeys(e) {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         var focused = document.activeElement;
         if (focused && focused.classList.contains('hex-cell')) {
@@ -1447,7 +1474,11 @@
           navigateHexGrid(focused, e.key);
         }
       }
-    });
+    }
+    
+    // Add Arrow key listener
+    document.addEventListener('keydown', handleArrowKeys, true);
+    window.addEventListener('keydown', handleArrowKeys, true);
     
     // Hex grid navigation helper
     function navigateHexGrid(currentElement, direction) {
