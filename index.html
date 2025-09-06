@@ -588,8 +588,11 @@
   <div class="widebar bottom"><div class="content"></div></div>
 
   <!-- Control Buttons (revealed post-Welcome) -->
-  <button id="aButton" class="hex-button circle-btn" aria-label="Play central video" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
-    <span class="label"></span>
+  <button id="wButton" class="hex-button circle-btn" aria-label="Toggle Welcome state" style="left:10%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
+    <span class="label">W</span>
+  </button>
+  <button id="aButton" class="hex-button circle-btn" aria-label="Toggle AutoTrader" style="left:50%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:140px;height:121px;">
+    <span class="label">A</span>
   </button>
   <button id="btn-bln" class="hex-button circle-btn" aria-label="Play blue video" style="left:20%;top:86%;transform:translate(-50%,-50%);position:fixed;z-index:5;display:none;width:120px;height:104px;">
     <span class="label">🔵</span>
@@ -1025,13 +1028,14 @@
       setTimeout(function(){
         try { svg.style.filter = 'blur(1px)'; } catch(e){}
         // Reveal control buttons
-        ;['aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
+        ;['wButton','aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
           var b = document.getElementById(id);
           if (b) b.style.display = 'inline-flex';
         });
         
-        // Setup A button after it's revealed
+        // Setup buttons after they're revealed
         setupAButton();
+        setupWButton();
         
         // start inactivity tracker for circle buttons once revealed
         try { startButtonsInactivityTracker(); } catch(_e){}
@@ -1065,7 +1069,7 @@
       setTimeout(function(){
         try { svg.style.filter = 'none'; } catch(e){}
         // Hide control buttons immediately when returning to main screen
-        ;['aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
+        ;['wButton','aButton','btn-bln','btn-grn','btn-red','btn-pme'].forEach(function(id){
           var b = document.getElementById(id);
           if (b) b.style.display = 'none';
         });
@@ -1521,46 +1525,52 @@
         v.addEventListener('click', function(){ enterFocusMode(item.id); });
       });
       
-      // A button setup function
+      // A button setup function - AutoTrader toggle only
       function setupAButton() {
         console.log('Setting up A button...');
         var aButton = document.getElementById('aButton');
         console.log('A button found:', aButton);
-        
         if (aButton) {
           console.log('Adding click listener to A button');
-          aButton.addEventListener('click', function(e){
+          aButton.onclick = function(e){
             e.preventDefault();
             e.stopPropagation();
-            console.log('A button clicked - toggling AutoTrader');
+            console.log('A button clicked!');
             var autoBackdrop = document.getElementById('autoTraderBackdrop');
-            console.log('AutoTrader backdrop found:', autoBackdrop);
-            console.log('AutoTrader backdrop has show class:', autoBackdrop && autoBackdrop.classList.contains('show'));
-            
             if (autoBackdrop && autoBackdrop.classList.contains('show')) {
-              console.log('Closing AutoTrader panel');
+              console.log('Closing AutoTrader');
               closeAutoTraderPanel();
             } else {
-              console.log('Opening AutoTrader panel');
+              console.log('Opening AutoTrader');
               openAutoTraderPanel();
             }
-          });
-          
-          // Right-click on "A" button toggles ambient video
-          aButton.addEventListener('contextmenu', function(e){
-            e.preventDefault();
-            var amb = document.getElementById('ambientVideo');
-            if (!amb) return;
-            if (amb.style.display !== 'block') {
-              amb.style.display = 'block';
-              try { amb.play(); } catch(_e){}
-            } else {
-              try { amb.pause(); } catch(_e){}
-              amb.style.display = 'none';
-            }
-          });
+          };
         } else {
-          console.error('A button not found during setup!');
+          console.error('A button not found!');
+        }
+      }
+      
+      // W button setup function - Welcome state toggle
+      function setupWButton() {
+        console.log('Setting up W button...');
+        var wButton = document.getElementById('wButton');
+        console.log('W button found:', wButton);
+        if (wButton) {
+          console.log('Adding click listener to W button');
+          wButton.onclick = function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('W button clicked!');
+            if (welcomeRevealed) {
+              console.log('Returning to main screen');
+              returnToMainScreen();
+            } else {
+              console.log('Triggering welcome reveal');
+              triggerWelcomeReveal();
+            }
+          };
+        } else {
+          console.error('W button not found!');
         }
       }
       // ESC handling is now managed by the main keyboard handler
@@ -1763,6 +1773,13 @@
     }
     
     // Initialize page - loading indicator removed as requested
+    
+    // Test button setup immediately
+    setTimeout(function(){
+      console.log('Testing button setup...');
+      setupAButton();
+      setupWButton();
+    }, 1000);
   </script>
 
 </body>
